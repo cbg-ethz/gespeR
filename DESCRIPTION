@@ -20,6 +20,7 @@ Collate:
     'Phenotypes-class.R'
     'TargetRelations-class.R'
     'gespeR-class.R'
+    'gespeR-concordance.R'
     'gespeR-functions.R'
     'gespeR-generics.R'
     'gespeR-methods.R'

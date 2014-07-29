@@ -8,7 +8,7 @@
 #' @param alpha The \code{\link{glmnet}} mixing parameter
 #' @param ncores The number of cores for parallel computation
 #' @return A list containing the fitted model and used paramers
-.gespeR.cv <- function(SSP, targets, alpha=0.5, ncores=1) {
+.gespeR.cv <- function(SSP, targets, alpha, ncores=1) {
   if (ncores > 1) {
     require(doMC)
     registerDoMC(cores=ncores)
@@ -67,7 +67,7 @@
               fit=stab.out$model,
               coefficients=stab.out$model$coefficients,
               cv=list(),
-              stability=list(stab.out, EV=EV, threshold=threshold, q=q, nbootstrap=nbootstrap)
+              stability=c(stab.out[c("matrix", "frequency", "selection")], EV=EV, threshold=threshold, q=q, nbootstrap=nbootstrap)
   )
   return(out)
 }
@@ -124,7 +124,7 @@ lasso.rand <- function(x, y,
 #' @param EV The expected value of wrongly selected elements
 #' @param weakness The weakness parameter for randomised lasso
 #' @param ncores The number of cores for parallel computation
-#' @return A \code{\link{glmnet}} object
+#' @return A list containing selected covariates with frequencies, and the fitted model
 stability.selection <- function(x, y, 
                                 fraction=0.5, 
                                 threshold=0.75, 

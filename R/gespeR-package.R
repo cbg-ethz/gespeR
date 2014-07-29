@@ -16,6 +16,7 @@
 #' @import methods Matrix glmnet
 #' @importClassesFrom cellHTS2 cellHTS
 #' @importFrom graphics plot
+
 NA
 
 #TODO: add data sets
