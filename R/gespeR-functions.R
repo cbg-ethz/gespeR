@@ -1,0 +1,195 @@
+#' gespeR cross validation
+#' 
+#' @author Fabian Schmich
+#' @noRd
+#' 
+#' @param SSP The siRNA-specific phenotypes
+#' @param targets The siRNA-to-gene target relations
+#' @param alpha The \code{\link{glmnet}} mixing parameter
+#' @param ncores The number of cores for parallel computation
+#' @return A list containing the fitted model and used paramers
+.gespeR.cv <- function(SSP, targets, alpha=0.5, ncores=1) {
+  if (ncores > 1) {
+    require(doMC)
+    registerDoMC(cores=ncores)
+  }
+  model <- cv.glmnet(x=targets, y=SSP,
+                     family="gaussian",
+                     alpha=alpha,
+                     type.measure="mse",
+                     standardize=FALSE,
+                     intercept=FALSE,
+                     keep=TRUE,
+                     parallel=ifelse(ncores > 1, TRUE, FALSE))
+  
+  out <- list(type=c("cv"),
+              fit=model$glmnet.fit,
+              coefficients=coef(model, s="lambda.1se")[,1],
+              cv=list(name=model$name, nzero=model$nzero, cvm=model$cvm, cvsd=model$cvsd, cvup=model$cvup, cvlo=model$cvlo, foldid=model$foldid, alpha=alpha),
+              stability=list()
+  )
+  return(out)
+}
+
+#' gespeR stability selection
+#' 
+#' @author Fabian Schmich
+#' @noRd
+#' 
+#' @param SSP The siRNA-specific phenotypes
+#' @param targets The siRNA-to-gene target relations
+#' @param nboostrap The number of bootstrap samples
+#' @param fraction The fraction for each bootstrap sample
+#' @param threshold The selection threshold
+#' @param EV The expected value of wrongly selected elements
+#' @param weakness The weakness parameter for randomised lasso
+#' @param ncores The number of cores for parallel computation
+#' @return A list containing the fitted model and used paramers
+.gespeR.stability <- function(SSP, targets,
+                              nbootstrap=100,
+                              fraction=0.5, 
+                              threshold=0.75, 
+                              EV=1, 
+                              weakness=1,
+                              ncores=1) {
+  stab.out <- stability.selection(x=targets, y=SSP,
+                               fraction=fraction, 
+                               threshold=threshold, 
+                               EV=EV, 
+                               nbootstrap=nbootstrap,
+                               weakness=weakness,
+                               ncores=ncores,
+                               intercept=FALSE,
+                               family="gaussian",
+                               standardize=FALSE
+                              )
+  out <- list(type=c("stability"),
+              fit=stab.out$model,
+              coefficients=stab.out$model$coefficients,
+              cv=list(),
+              stability=list(stab.out, EV=EV, threshold=threshold, q=q, nbootstrap=nbootstrap)
+  )
+  return(out)
+}
+
+#'  Randomized Lasso
+#'  
+#'  Based on Meinshausen and Buehlmann (2009)
+#'  
+#'  @author Fabian Schmich
+#'  @export
+#'  
+#'  @param x The design matrix
+#'  @param y The response vector
+#'  @param weakness The weakness parameter
+#'  @param subsample The data subsample (default: none)
+#'  @param dfmax The maxiumum number of degrees of freedom
+#'  @param lambda The regularisation parameter
+#'  @param standardize Indicator, wheter to standardize the design matrix
+#'  @param intercept Indicator, whether to fit an intercept
+#'  @return A \code{\link{glmnet}} object
+lasso.rand <- function(x, y,
+                       weakness=1,
+                       subsample=1:nrow(x),
+                       dfmax=(ncol(x)+1),
+                       lambda=NULL,
+                       standardize=FALSE,
+                       intercept=FALSE,
+                       ...) {
+  if (is.null(dim(y))) y <- cbind(y)  
+  glmnet(x[subsample,], y[subsample,],
+         lambda=lambda,
+         penalty.factor=(1 / runif(ncol(x), weakness, 1)),
+         alpha=1,
+         dfmax=dfmax,
+         standardize=FALSE,
+         ...)
+}
+
+
+#' Stability Selection
+#' 
+#' Based on Meinshausen and Buehlmann (2009)
+#' 
+#' @author Fabian Schmich
+#' @import doMC
+#' @export
+#' 
+#' @param x The design matrix
+#' @param y The response vector
+#' @param intercept Indicator, whether to fit an intercept
+#' @param nboostrap The number of bootstrap samples
+#' @param fraction The fraction for each bootstrap sample
+#' @param threshold The selection threshold
+#' @param EV The expected value of wrongly selected elements
+#' @param weakness The weakness parameter for randomised lasso
+#' @param ncores The number of cores for parallel computation
+#' @return A \code{\link{glmnet}} object
+stability.selection <- function(x, y, 
+                                fraction=0.5, 
+                                threshold=0.75, 
+                                EV=1, 
+                                nbootstrap=100,
+                                weakness=1,
+                                intercept=FALSE,
+                                ncores=1,
+                                ...) {
+  # Dimensions
+  n <- nrow(x)
+  p <- ncol(x)
+  
+  # Subsample size
+  n.sel <- floor(fraction * n)
+  
+  # Variable bound
+  q <- ceiling(sqrt(EV * p * (2 * threshold - 1))) # (9)
+  #   cat(sprintf("\nq = %d\n", q))
+  
+  # Subsampling
+  require(doMC)
+  registerDoMC(cores=ncores)
+  sel.mat <- foreach (b = 1:nbootstrap, .combine=rbind) %dopar% {
+    # Current sub-sampled data
+    sel <- sample(1:n, n.sel, replace=FALSE)        
+    # Get selected model
+    fit <- lasso.rand(x=x, y=y, subsample=sel, dfmax=q, weakness=weakness, intercept=intercept, ...)
+    return(.select.model(fit, q))
+  }
+  
+  # Get selection frequencies
+  freq <- colMeans(sel.mat)
+  names(freq) <- colnames(x)  
+  sel.current <- which(freq >= threshold)
+  names(sel.current) <- colnames(x)[sel.current]
+  
+  # fit model
+  x.sel <- as.matrix(x[,sel.current])
+  rownames(x.sel) <- rownames(x)
+  colnames(x.sel) <- colnames(x)[sel.current]
+  model <- lm(y ~ x.sel - 1)
+  
+  out <- list(model=model, matrix=sel.mat, frequency=freq, selection=sel.current)
+  return(out)  
+}
+
+
+#' Model selector (taken from hdi package)
+#' 
+#' @author Fabian Schmich
+#' @noRd
+#' 
+#' @param fit A (randomised lasso) model
+#' @param q The variable bound
+#' @return A vector indicating the selected model
+.select.model <- function(fit, q) {
+  p <- fit$dim[1]
+  p.sel <- vector(length=p)
+  # Determine non-zero coeficients
+  nz <- predict(fit, type="nonzero")
+  # Determine largest model that is <= q
+  delta <- q - unlist(lapply(nz, length)) # deviation from desired model size
+  delta[delta < 0] <- Inf # overshooting not allowed
+  nz <- nz[[which.min(delta)]] # takes first occurrence
+  p.sel[nz] <- TRUE # set selected to TRUE
+  return(p.sel) 
+}
