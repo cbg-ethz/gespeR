@@ -1,0 +1,26 @@
+Package: gespeR
+Imports:
+    methods,
+    glmnet,
+    cellHTS2
+Type: Package
+Lazyload: yes
+Title: Gene-Specific Phenotype EstimatoR
+Version: 1.0
+Date: 2014-07-29
+Author: Fabian Schmich
+Maintainer: Fabian Schmich <fabian.schmich@bsse.ethz.ch>
+Description: Estimates gene-specifc phenotypes from off-target confounded RNAi
+    screens. The phenotype of each siRNA is modeled based on on-targeted and
+    off-targeted genes, using a regularized linear regression model.
+License: GPL-3
+VignetteBuilder: knitr
+URL: http://www.cbg.ethz.ch/software/gespeR
+Collate:
+    'Phenotypes-class.R'
+    'TargetRelations-class.R'
+    'gespeR-class.R'
+    'gespeR-functions.R'
+    'gespeR-generics.R'
+    'gespeR-methods.R'
+    'gespeR-package.R'
