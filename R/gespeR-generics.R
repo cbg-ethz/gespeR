@@ -21,7 +21,8 @@ setMethod(f="summary",
           signature=signature(object="gespeR"),
           definition=function(object) {
             cat("gespeR model\n")
-            cat("is.fitted:", ifelse(object@is.fitted, "YES", "NO"), "\n")
+            cat("is fitted:", ifelse(object@is.fitted, "YES", "NO"), "\n")
+            cat("targets loaded: ", ifelse(object@target.relations@is.loaded, "YES", "NO"), "\n")
             if (object@is.fitted) {
               cat("type:", object@model$type, "\n")
               if(object@model$type == "stability") {
@@ -110,12 +111,12 @@ setMethod("show",
 setMethod("show",
           signature=signature("TargetRelations"),
           function(object) {            
-            if(object@loaded) {
+            if(object@is.loaded) {
               cat(sprintf("%d x %d siRNA-to-gene relations.\n", nrow(object@values), ncol(object@values)))
               print(object@values[1:min(nrow(object@values), 10), 1:min(ncol(object@values), 5)])
               cat("...\n")
             } else {
-              cat("Matrix not loaded:", object@path, "\n")
+              cat("Values not loaded:", object@path, "\n")
             }
           }
 )
@@ -177,16 +178,16 @@ setMethod(f="[",
             if (missing(j)) j <- 1:ncol(x@values)
             #             if (any(is.na(i)) | any(is.na(j)))
             #               stop("subscript 'i' contains NA")
-            is.loaded <- x@loaded
-            if (!is.loaded) x <- loadMatrix(x)
+            is.loaded <- x@is.loaded
+            if (!is.loaded) x <- loadValues(x)
             result = new("TargetRelations", 
                          siRNAs=slot(x, "siRNAs")[i, drop=FALSE],
                          genes=slot(x, "genes")[j, drop=FALSE],
                          values=slot(x, "values")[i, j, drop=FALSE], 
                          path=slot(x, "path"),
-                         loaded=is.loaded
+                         is.loaded=is.loaded
             )
-            if (!is.loaded) result <- unloadMatrix(result)
+            if (!is.loaded) result <- unloadValues(result)
             return(result)
           }
 )

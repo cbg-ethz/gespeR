@@ -24,10 +24,11 @@ setMethod("gespeR",
           signature = signature(phenotypes="Phenotypes", target.relations="TargetRelations"),
           function(phenotypes, target.relations, mode=c("cv", "stability"), ...){
             mode = match.arg(mode)
-            if (!target.relations@loaded) target.relations <- loadMatrix(target.relations)
+            if (!target.relations@is.loaded) target.relations <- loadValues(target.relations)
+            xy <- join(targets=target.relations, phenotypes=phenotypes)
             model <- switch(mode,
-                            "cv"=.gespeR.cv(targets=target.relations@values, SSP=scores(phenotypes), ...),
-                            "stability"=.gespeR.stability(targets=target.relations@values, SSP=scores(phenotypes), ...)
+                            "cv"=.gespeR.cv(targets=values(xy$targets), SSP=scores(xy$phenotypes), ...),
+                            "stability"=.gespeR.stability(targets=values(xy$targets), SSP=scores(xy$phenotypes), ...)
             )            
             gsp <- switch(mode,
                           cv=model$coefficients[-1][which(model$coefficients[-1] != 0)],
@@ -37,11 +38,11 @@ setMethod("gespeR",
                                  cv=names(gsp),
                                  stability=names(model$stability$selection)
             )
-            target.relations <- unloadMatrix(target.relations)
+#             target.relations <- unloadValues(target.relations)
             new("gespeR",
-                SSP=phenotypes,
+                SSP=xy$phenotypes,
                 GSP=Phenotypes(phenotype=gsp, ids=names(gsp), type="GSP"),
-                target.relations=target.relations,
+                target.relations=xy$targets,
                 model=model,
                 is.fitted=TRUE)
             
@@ -274,7 +275,7 @@ setMethod(f="TargetRelations",
                 siRNAs=rownames(mat),
                 values=mat,
                 genes=colnames(mat),
-                loaded=TRUE
+                is.loaded=TRUE
             )  
           }
 )
@@ -290,34 +291,34 @@ setMethod(f="TargetRelations",
                 siRNAs=rownames(targets),
                 values=targets,
                 genes=colnames(targets),
-                loaded=TRUE
+                is.loaded=TRUE
             )  
           }
 )
 
-#' Load matrix of a TargetRelations object
+#' Load values of a TargetRelations object
 #' 
 #' @author Fabian Schmich
-#' @rdname loadMatrix-methods
+#' @rdname loadValues-methods
 #' 
-#' @seealso \code{\link{unloadMatrix}}
-#' @exportMethod loadMatrix
+#' @seealso \code{\link{unloadValues}}
+#' @exportMethod loadValues
 #' 
 #' @param object A \code{\linkS4class{TargetRelations}} object
 #' @return A \code{\linkS4class{TargetRelations}} object
-setGeneric(name="loadMatrix", 
+setGeneric(name="loadValues", 
            def=function(object) {
-             standardGeneric("loadMatrix")
+             standardGeneric("loadValues")
            })
 
-#' @rdname loadMatrix-methods
-setMethod(f="loadMatrix",
+#' @rdname loadValues-methods
+setMethod(f="loadValues",
           signature=signature("TargetRelations"),
           function(object) {
-            if (!object@loaded) {
+            if (!object@is.loaded) {
               if (file.exists(object@path)) {
                 new("TargetRelations",
-                    loaded=TRUE,
+                    is.loaded=TRUE,
                     siRNAs=object@siRNAs,
                     genes=object@genes,
                     path=object@path,
@@ -326,88 +327,110 @@ setMethod(f="loadMatrix",
               } else {
                 stop(sprintf("File not found: %s", object@path))
               }
+            } else {
+              return(object)
             }
           }
 )
 
-#' Unload matrix of a TargetRelations object
+#' @rdname loadValues-methods
+setMethod(f="loadValues",
+          signature=signature("gespeR"),
+          function(object) {
+            object@target.relations <- loadValues(object@target.relations)
+            return(object)
+          }
+)
+
+#' Unload values of a TargetRelations object
 #' 
 #' @author Fabian Schmich
-#' @rdname unloadMatrix-methods
+#' @rdname unloadValues-methods
 #' 
-#' @seealso \code{\link{loadMatrix}}
-#' @exportMethod unloadMatrix
+#' @seealso \code{\link{loadValues}}
+#' @exportMethod unloadValues
 #' 
-#' @param object A \code{\linkS4class{TargetRelations}} object
-#' @return A \code{\linkS4class{TargetRelations}} object
-setGeneric(name="unloadMatrix", 
+#' @param object A \code{\linkS4class{TargetRelations}} object or \code{\linkS4class{gespeR}} object
+#' @return A \code{\linkS4class{TargetRelations}} object or \code{\linkS4class{gespeR}} object
+setGeneric(name="unloadValues", 
            def=function(object, ...) {
-             standardGeneric("unloadMatrix")
+             standardGeneric("unloadValues")
            })
 
-#' @rdname unloadMatrix-methods
-setMethod(f="unloadMatrix",
+#' @rdname unloadValues-methods
+setMethod(f="unloadValues",
           signature=signature(object="TargetRelations"),
-          function(object, writeMatrix=TRUE, overwrite=FALSE) {
-            if (writeMatrix) {
+          function(object, writeValues=TRUE, overwrite=FALSE) {
+            if (writeValues) {
               mat.written <- FALSE
-              if (!object@loaded)
-                object <- loadMatrix(object)
-              mat.written <- writeMatrix(object=object, overwrite=overwrite)
+              if (!object@is.loaded)
+                object <- loadValues(object)
+              mat.written <- writeValues(object=object, overwrite=overwrite)
               if (mat.written) {
                 new("TargetRelations",
-                    loaded=FALSE,
+                    is.loaded=FALSE,
                     siRNAs=object@siRNAs,
                     genes=object@genes,
                     path=object@path,
                     values=Matrix(0,0,0)
                 )
               } else {
-                #object <- unloadMatrix(object, writeMatrix=FALSE, overwrite=FALSE)
+                #object <- unloadValues(object, writeValues=FALSE, overwrite=FALSE)
                 return(object)
               }               
             } else {
-              if (object@loaded) {
+              if (object@is.loaded) {
                 new("TargetRelations",
-                    loaded=FALSE,
+                    is.loaded=FALSE,
                     siRNAs=object@siRNAs,
                     genes=object@genes,
                     path=object@path,
                     values=Matrix(0,0,0)
                 )
               } else {
-                #object <- unloadMatrix(object, writeMatrix=FALSE, overwrite=FALSE)
+                #object <- unloadValues(object, writeValues=FALSE, overwrite=FALSE)
                 return(object)
               }
             }
           }
 )
 
+#' @rdname unloadValues-methods
+setMethod(f="unloadValues",
+          signature=signature(object="gespeR"),
+          function(object, writeValues=TRUE, overwrite=FALSE, path=NULL) {
+            x <- object@target.relations
+            if (!is.null(path)) path(x) <- path
+            x <- unloadValues(x, writeValues=writeValues, overwrite=overwrite)
+            object@target.relations <- x
+            return(object)
+          }
+)
 
 #' Write down the values of a \code{\link{TargetRelations}} object
 #' 
 #' @author Fabian Schmich
-#' @rdname writeMatrix-methods
+#' @rdname writeValues-methods
 #' 
-#' @seealso \code{\link{loadMatrix}} \code{\link{unloadMatrix}}
-#' @exportMethod writeMatrix
+#' @seealso \code{\link{loadValues}} \code{\link{unloadValues}}
+#' @exportMethod writeValues
 #' 
 #' @param object A \code{\linkS4class{TargetRelations}} object
 #' @return A \code{\linkS4class{TargetRelations}} object
-setGeneric(name="writeMatrix", 
+setGeneric(name="writeValues", 
            def=function(object, ...) {
-             standardGeneric("writeMatrix")
+             standardGeneric("writeValues")
            })
 
-#' @rdname writeMatrix-methods
-setMethod(f="writeMatrix",
+#' @rdname writeValues-methods
+setMethod(f="writeValues",
           signature=signature("TargetRelations"),
           function(object, overwrite=FALSE) {
-            if (!object@loaded)
-              object <- loadMatrix(object)
+            if (!object@is.loaded)
+              object <- loadValues(object)
             if (!is.null(object@path)) {
               if (!overwrite & file.exists(object@path)) {
-                warning("Matrix file already exists on HDD. Set overwrite=TRUE.")                
+                warning("Values file already exists on HDD. Set overwrite=TRUE.")                
               } else {
                 saveRDS(object@values, file=object@path)
                 return(TRUE)
@@ -433,7 +456,7 @@ setGeneric(name="path<-",
              standardGeneric("path<-")
            })
 
-#' @rdname writeMatrix-methods
+#' @rdname writeValues-methods
 setMethod(f="path<-",
           signature=signature(object="TargetRelations", value="character"),
           function(object, value) {
@@ -489,6 +512,37 @@ setMethod(f="stability",
             } else {
               warning("gespeR model not fitted")
             }
+          }
+)
+
+#' Get values
+#'
+#' @author Fabian Schmich
+#' @noRd
+#' @export
+#' 
+#' @return A \code{\linkS4class{Matrix}} object of TargetRelations values
+setGeneric(name="values", def=function(object) standardGeneric("values"))
+setMethod(f="values",
+          signature=signature(object="TargetRelations"),
+          function(object) {
+            if (!object@is.loaded) object <- loadValues(object)
+            return(object@values)
+          }
+)
+
+#' Get target.relations
+#'
+#' @author Fabian Schmich
+#' @noRd
+#' @export
+#' 
+#' @return A \code{\linkS4class{TargetRelations}} object 
+setGeneric(name="target.relations", def=function(object) standardGeneric("target.relations"))
+setMethod(f="target.relations",
+          signature=signature(object="gespeR"),
+          function(object) {
+            return(object@target.relations)
           }
 )
 
