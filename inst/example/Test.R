@@ -25,6 +25,7 @@ g <- unloadValues(g.stab, path="~/test3.rds", overwrite=TRUE)
 format(object.size(g.stab), units="Mb")
 format(object.size(g), units="Mb")
 g <- loadValues(g)
+target.relations(g)
 
 p <- readRDS("~/scratch/gespeR2/Data/Phenotypes/normCHTS_cn5_ic5/cellHTS2/BRUCELLA_QU-G_B.rds")
 y <- Phenotypes(p$scored, channel="cells.all", sample=1)
