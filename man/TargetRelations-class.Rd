@@ -16,7 +16,7 @@ for a knockdown library and a set of genes.
 
 \item{\code{path}}{The path to and \code{.rds} \code{\link{TargetRelations}} file}
 
-\item{\code{loaded}}{An indicator if target relations values are loaded}
+\item{\code{is.loaded}}{An indicator if target relations values are loaded}
 
 \item{\code{values}}{The quantitative target relation values between siRNAs and genes}
 }}

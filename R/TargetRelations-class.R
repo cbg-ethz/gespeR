@@ -14,18 +14,18 @@
 #' @slot siRNAs The siRNA identifiers
 #' @slot genes The gene identifiers (Entrez)
 #' @slot path The path to and \code{.rds} \code{\link{TargetRelations}} file
-#' @slot loaded An indicator if target relations values are loaded
+#' @slot is.loaded An indicator if target relations values are loaded
 #' @slot values The quantitative target relation values between siRNAs and genes
 setClass(Class="TargetRelations",
          representation=representation(
            siRNAs="character",
            genes="character",
            path="character",
-           loaded="logical",
+           is.loaded="logical",
            values="Matrix"
          ),
          validity=function(object) {
-           if (object@loaded) {
+           if (object@is.loaded) {
              if (!all(dim(object@values) == c(length(object@siRNAs), length(object@genes)))) {
                stop("Incorrect target matrix dimensions.")
              }             
