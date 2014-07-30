@@ -184,6 +184,9 @@ setMethod(f="join",
             if (length(isect) != length(p.siRNAs) | length(isect) != length(t.siRNAs)) {
               warning("Phenotype siRNAs and TargetRelations siRNAs do not fully overlap. Stripping to intersection...")
             }
+            if (length(isect) == 0) {
+              warning("Phenotype siRNAs and TargetRelations siRNAs do not overlap.")
+            }
             phenotypes <- phenotypes[match(isect, p.siRNAs)]
             targets <- targets[match(isect, t.siRNAs),]
             return(list(phenotypes=phenotypes, targets=targets))
