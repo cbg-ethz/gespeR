@@ -38,7 +38,7 @@ of the top and bottom of ranked lists, and the Jaccard index (J) of selected gen
 Fabian Schmich
 }
 \seealso{
-\code{\link{Phenotype}}
+\code{\linkS4class{Phenotypes}}
 
 \code{\link{plot.concordance}}
 

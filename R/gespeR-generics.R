@@ -1,3 +1,18 @@
+#' Summary generic
+#'
+#' @author Fabian Schmich
+#' @name summary
+#' @export
+#'
+if (!isGeneric("summary")) {
+  setGeneric(name="summary",
+             def=function(object, ...) {
+                standardGeneric("summary")
+             },
+             package="gespeR"
+            )  
+}
+
 #' Summary method for \code{\linkS4class{gespeR}} objects
 #' 
 #' @author Fabian Schmich

@@ -1,13 +1,17 @@
 Package: gespeR
 Imports:
-    methods,
     Matrix,
     glmnet
 Depends:
+    methods,
+    graphics,
     cellHTS2,
     Biobase,
     biomaRt,
     doMC
+Suggests:
+    ggplot2,
+    reshape2
 Type: Package
 Lazyload: yes
 Title: Gene-Specific Phenotype EstimatoR

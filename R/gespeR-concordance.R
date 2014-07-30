@@ -1,3 +1,5 @@
+# TODO: make concordance() a generic!?
+
 #' Evaluate the concordance between Phenotype objects
 #' 
 #' Measures include the correlation (rho) between pairs of phenotypes for the same gene, the rank biased overlap (\code{\link{rbo}}) 
@@ -5,7 +7,7 @@
 #' 
 #' @author Fabian Schmich
 #' @export
-#' @seealso \code{\link{Phenotype}}
+#' @seealso \code{\linkS4class{Phenotypes}}
 #' @seealso \code{\link{plot.concordance}}
 #' @seealso \code{\link{rbo}}
 #' 
@@ -24,7 +26,7 @@
 #' \item{jaccard}{The Jaccard index of selected genes}
 concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pairwise.complete.obs", rbo.p=0.95, rbo.k=NULL, rbo.mid=NULL) {
   phenotypes <- list(...)
-  if(all(sapply(phenotypes, is, class2="Phenotype")) == FALSE) {
+  if(all(sapply(phenotypes, is, class2="Phenotypes")) == FALSE) {
     stop("Not all elements for comparison are Phenotype objects.")
   }
   # Find all pairs of phenotypes
