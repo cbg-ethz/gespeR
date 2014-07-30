@@ -1,8 +1,12 @@
 Package: gespeR
 Imports:
     methods,
-    glmnet,
-    cellHTS2
+    glmnet
+Depends:
+    cellHTS2,
+    Biobase,
+    biomaRt,
+    doMC
 Type: Package
 Lazyload: yes
 Title: Gene-Specific Phenotype EstimatoR

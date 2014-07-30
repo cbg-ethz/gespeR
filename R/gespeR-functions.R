@@ -3,6 +3,8 @@
 #' @author Fabian Schmich
 #' @noRd
 #' 
+#' @import doMC
+#' 
 #' @param SSP The siRNA-specific phenotypes
 #' @param targets The siRNA-to-gene target relations
 #' @param alpha The \code{\link{glmnet}} mixing parameter
@@ -10,7 +12,7 @@
 #' @return A list containing the fitted model and used paramers
 .gespeR.cv <- function(SSP, targets, alpha, ncores=1) {
   if (ncores > 1) {
-    require(doMC)
+    #require(doMC)
     registerDoMC(cores=ncores)
   }
   model <- cv.glmnet(x=targets, y=SSP,

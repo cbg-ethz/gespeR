@@ -3,7 +3,7 @@
 \alias{plot.concordance}
 \title{Plot concordance}
 \usage{
-\method{plot}{concordance}(x)
+plot.concordance(x)
 }
 \arguments{
 \item{x}{The data of class \code{\link{concordance}}}

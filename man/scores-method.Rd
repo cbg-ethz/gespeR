@@ -8,7 +8,7 @@
 \usage{
 \S4method{scores}{Phenotypes}(object)
 
-\S4method{scores}{gespeR}(object, type)
+\S4method{scores}{gespeR}(object, type = c("GSP", "SSP"))
 }
 \arguments{
 \item{object}{A \code{\linkS4class{gespeR}} or \code{\linkS4class{Phenotypes}} object}

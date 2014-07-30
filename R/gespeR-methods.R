@@ -141,7 +141,7 @@ setMethod(f="scores",
 #' @rdname scores-method
 setMethod(f="scores",
           signature=signature(object="gespeR"),
-          definition=function(object, type) {
+          definition=function(object, type=c("GSP", "SSP")) {
             type <- match.arg(type)
             phen <- switch(type,
                            "GSP"=object@GSP,
@@ -195,7 +195,6 @@ setMethod(f="join",
 #' @name annotate.gsp
 #' @rdname annotate.gsp-methods
 #' 
-#' @import biomaRt
 #' @export
 #' 
 #' @param object A \code{\linkS4class{gespeR}} or \code{\linkS4class{Phenotypes}} object
