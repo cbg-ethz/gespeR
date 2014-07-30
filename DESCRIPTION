@@ -1,6 +1,7 @@
 Package: gespeR
 Imports:
     methods,
+    Matrix,
     glmnet
 Depends:
     cellHTS2,

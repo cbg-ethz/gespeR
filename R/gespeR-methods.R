@@ -54,6 +54,11 @@ setMethod("gespeR",
 #' 
 #' @author Fabian Schmich
 #' @rdname Phenotypes-methods
+#' 
+#' @importClassesFrom cellHTS2 cellHTS
+#' @importFrom cellHTS2 Data
+#' @importFrom Biobase featureNames channelNames
+#' 
 #' @exportMethod Phenotypes
 #' 
 #' @param phenotypes The phenotypes as numeric vector, path to a .txt file with two columns (1: identifiers, 2: values), or a cellHTS object
@@ -195,6 +200,7 @@ setMethod(f="join",
 #' @name annotate.gsp
 #' @rdname annotate.gsp-methods
 #' 
+#' @importFrom biomaRt useMart useDataset getBM
 #' @export
 #' 
 #' @param object A \code{\linkS4class{gespeR}} or \code{\linkS4class{Phenotypes}} object

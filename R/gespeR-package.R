@@ -13,11 +13,7 @@
 #' @docType package
 #' @keywords package
 #' @references Fabian Schmich et. al,  Deconvoluting Off-Target Confounded RNA Interference Screens (2014). \href{}{DOI:}.
-#' @import methods glmnet
-#' @importClassesFrom cellHTS2 cellHTS
-#' @importFrom biomaRt useMart useDataset getBM
-#' @importFrom cellHTS2 Data
-#' @importFrom Biobase featureNames channelNames
+#' @import methods Matrix glmnet
 #' @importFrom graphics plot
 
 NA
