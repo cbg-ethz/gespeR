@@ -443,5 +443,52 @@ setMethod(f="path<-",
 )
 
 
+#' Get GSPs
+#'
+#' @author Fabian Schmich
+#' @noRd
+#' @export
+#' 
+#' @return A \code{\linkS4class{Phenotypes}} object of GSPs
+setGeneric(name="gsp", def=function(object) standardGeneric("gsp"))
+setMethod(f="gsp",
+          signature=signature(object="gespeR"),
+          function(object) object@GSP
+         )
 
+#' Get SSPs
+#'
+#' @author Fabian Schmich
+#' @noRd
+#' @export
+#' 
+#' @return A \code{\linkS4class{Phenotypes}} object of SSPs
+setGeneric(name="ssp", def=function(object) standardGeneric("ssp"))
+setMethod(f="ssp",
+          signature=signature(object="gespeR"),
+          function(object) object@SSP
+)
+
+#' Get stability
+#'
+#' @author Fabian Schmich
+#' @noRd
+#' @export
+#' 
+#' @return A \code{\linkS4class{Phenotypes}} object of SSPs
+setGeneric(name="stability", def=function(object) standardGeneric("stability"))
+setMethod(f="stability",
+          signature=signature(object="gespeR"),
+          function(object) {
+            if (object@is.fitted) {
+              if(object@model$type == "stability") {
+                return(object@model$stability)
+              } else {
+                warning("gespeR model not fitted in mode=stability")
+              }
+            } else {
+              warning("gespeR model not fitted")
+            }
+          }
+)
 
