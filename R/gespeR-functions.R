@@ -69,7 +69,7 @@
               fit=stab.out$model,
               coefficients=stab.out$model$coefficients,
               cv=list(),
-              stability=c(stab.out[c("matrix", "frequency", "selection")], EV=EV, threshold=threshold, q=q, nbootstrap=nbootstrap)
+              stability=c(stab.out[c("frequency", "selection")], EV=EV, threshold=threshold, q=q, nbootstrap=nbootstrap)
   )
   return(out)
 }
