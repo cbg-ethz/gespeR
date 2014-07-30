@@ -68,10 +68,10 @@ concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pair
 #' @export
 #' 
 #' @param x The data of class \code{\link{concordance}}
-plot.concordance <- function(x) {
+plot.concordance <- function(x, ...) {
   if (!require(ggplot2) | !require(reshape2)) {
     warning("You may want to install ggplot2 and reshape2 for prettier plots.")
-    boxplot(x[-1])
+    boxplot(x[-1], ...)
   } else {
     x <- melt(data.frame(x[1:5]), id.vars=c("test.pair"), variable.name="measure")
     x$measure <- factor(x$measure, levels=c("cor", "rbo.top", "rbo.bottom", "jaccard"))
