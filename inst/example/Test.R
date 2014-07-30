@@ -20,6 +20,11 @@ g.stab <- gespeR(phenotypes=f$phenotypes, target.relations=f$targets, mode="stab
 g.cv <- gespeR(phenotypes=f$phenotypes, target.relations=f$targets, mode="cv", ncores=5, alpha=0.5)
 
 
+g.stab <- gespeR(phenotypes=y, target.relations=x, mode="stability", ncores=7, EV=10, threshold=0.75)
+g <- unloadValues(g.stab, path="~/test3.rds", overwrite=TRUE)
+format(object.size(g.stab), units="Mb")
+format(object.size(g), units="Mb")
+g <- loadValues(g)
 
 p <- readRDS("~/scratch/gespeR2/Data/Phenotypes/normCHTS_cn5_ic5/cellHTS2/BRUCELLA_QU-G_B.rds")
 y <- Phenotypes(p$scored, channel="cells.all", sample=1)
