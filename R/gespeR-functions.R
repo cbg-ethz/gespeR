@@ -89,6 +89,7 @@
 #'  @param lambda The regularisation parameter
 #'  @param standardize Indicator, wheter to standardize the design matrix
 #'  @param intercept Indicator, whether to fit an intercept
+#'  @param ... Additional arguments to \code{\link{glmnet}}
 #'  @return A \code{\link{glmnet}} object
 lasso.rand <- function(x, y,
                        weakness=1,
@@ -120,12 +121,13 @@ lasso.rand <- function(x, y,
 #' @param x The design matrix
 #' @param y The response vector
 #' @param intercept Indicator, whether to fit an intercept
-#' @param nboostrap The number of bootstrap samples
+#' @param nbootstrap The number of bootstrap samples
 #' @param fraction The fraction for each bootstrap sample
 #' @param threshold The selection threshold
 #' @param EV The expected value of wrongly selected elements
 #' @param weakness The weakness parameter for randomised lasso
 #' @param ncores The number of cores for parallel computation
+#' @param ... Additional arguments to \code{\link{lasso.rand}}
 #' @return A list containing selected covariates with frequencies, and the fitted model
 stability.selection <- function(x, y, 
                                 fraction=0.5, 
@@ -148,7 +150,6 @@ stability.selection <- function(x, y,
   #   cat(sprintf("\nq = %d\n", q))
   
   # Subsampling
-  require(doMC)
   registerDoMC(cores=ncores)
   sel.mat <- foreach (b = 1:nbootstrap, .combine=rbind) %dopar% {
     # Current sub-sampled data

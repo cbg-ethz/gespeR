@@ -16,7 +16,6 @@ if (!isGeneric("summary")) {
 #' Summary method for \code{\linkS4class{gespeR}} objects
 #' 
 #' @author Fabian Schmich
-#' @aliases summary, gespeR-method
 setMethod(f="summary",
           signature=signature(object="gespeR"),
           definition=function(object) {
@@ -42,7 +41,6 @@ setMethod(f="summary",
 #' Show method for gespeR objects
 #' 
 #' @author Fabian Schmich
-#' @aliases show, gespeR-method
 #' 
 #' @param object A \code{\linkS4class{gespeR}} object
 setMethod(f="show",
@@ -74,6 +72,7 @@ setMethod(f="show",
 #' @method plot gespeR
 #' 
 #' @param x A \code{\linkS4class{gespeR}} object
+#' @param ... Additional paramters for plot
 plot.gespeR <- function(x, ...) {
   if (x@is.fitted) {
     switch(x@model$type,
@@ -90,7 +89,7 @@ plot.gespeR <- function(x, ...) {
 #' Show method for Phenotype objects
 #' 
 #' @author Fabian Schmich
-#' @param object A \code{\link{Phenotype}} object.
+#' @param object A \code{\linkS4class{Phenotypes}} object.
 setMethod("show",
           signature=signature("Phenotypes"),
           function(object) {
@@ -124,6 +123,7 @@ setMethod("show",
 #' Plot method for Phenotype objects
 #' 
 #' @param x A \code{\linkS4class{Phenotypes}} object
+#' @param ... Additional arguments for plot
 #' @return NULL
 #' @method plot Phenotypes
 #' @export
@@ -132,12 +132,12 @@ plot.Phenotypes <- function(x, ...) {
   hist(x@values, main=sprintf("%s Phenotypes", x@type), xlab="Scores", ...)
 }
 
+
 #' Subsetting for Phenotype objects.
 #' 
 #' @author Fabian Schmich
-#' @name Extract
-#' @name `[`
-#' @rdname Extract-methods
+#' @name Extract-Phenotypes
+#' @rdname Extract-Phenotypes-methods
 #' 
 #' @export
 #' 
@@ -161,9 +161,8 @@ setMethod(f="[",
 #' Subsetting for TargetRelations objects.
 #' 
 #' @author Fabian Schmich
-#' @name Extract
-#' @name `[`
-#' @rdname Extract-methods
+#' @name Extract-TargetRelations
+#' @rdname Extract-TargetRelations-methods
 #' 
 #' @export
 #' 

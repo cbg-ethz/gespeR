@@ -60,22 +60,26 @@ setMethod("gespeR",
 #' @importFrom cellHTS2 Data
 #' @importFrom Biobase featureNames channelNames
 #' 
-#' @exportMethod Phenotypes
+#' @export Phenotypes
 #' 
 #' @param phenotypes The phenotypes as numeric vector, path to a .txt file with two columns (1: identifiers, 2: values), or a cellHTS object
 #' @param ids The phenotype identifiers
 #' @param type The type of phenotype (GSP, SSP)
-#' @return A \code{\link{Phenotype}} object 
+#' @param ... Additional arguments
+#' @return A \code{\link{Phenotypes}} object 
 setGeneric(name="Phenotypes", 
            def=function(phenotypes, ...) { 
              standardGeneric("Phenotypes")
            })
 
 #' @rdname Phenotypes-methods
+#' @param sep The separator string
+#' @param col.id Column number for the identifier
+#' @param col.score Column number for the phenotype score
 #' @aliases Phenotypes
 setMethod(f="Phenotypes",
           signature=signature(phenotypes="character"),
-          function(phenotypes, type=c("SSP", "GSP"), sep="\t", col.id=1, col.score=2, ...) {
+          function(phenotypes, type=c("SSP", "GSP"), sep="\t", col.id=1, col.score=2) {
             type <- match.arg(type)
             if (!file.exists(phenotypes)) {
               stop(sprintf("File not found: %s", phenotype))
@@ -88,6 +92,8 @@ setMethod(f="Phenotypes",
 
 #' @rdname Phenotypes-methods
 #' @aliases Phenotypes
+#' @param channel The cellHTS channel identifier
+#' @param sample The cellHTS sample index
 setMethod(f="Phenotypes",
           signature=signature(phenotypes="cellHTS"),
           function(phenotypes, channel, sample) {
@@ -125,6 +131,7 @@ setMethod(f="Phenotypes",
 #' 
 #' @param object A \code{\linkS4class{gespeR}} or \code{\linkS4class{Phenotypes}} object
 #' @param type The type of phenotype scores (GSP, SSP)
+#' @param ... Additional arguments
 #' @return A named vector of scores for each phenotype identifier
 if (!isGeneric("scores")) {
   setGeneric(name="scores",
@@ -163,7 +170,6 @@ setMethod(f="scores",
 #' Join a TargetRelations object and a Phenotype object
 #' 
 #' @author Fabian Schmich
-#' @name join
 #' @rdname join-methods
 #' @export
 #' 
@@ -175,6 +181,8 @@ setGeneric(name="join",
              standardGeneric("join")
            })
 
+#' @author Fabian Schmich
+#' @rdname join-methods
 setMethod(f="join",
           signature=c(targets="TargetRelations", phenotypes="Phenotypes"),
           def=function(targets, phenotypes) {
@@ -201,14 +209,14 @@ setMethod(f="join",
 #' Currently, only implemented for species "hsapiens".
 #' 
 #' @author Fabian Schmich
-#' @name annotate.gsp
 #' @rdname annotate.gsp-methods
-#' 
+#' @name annotate.gsp
 #' @importFrom biomaRt useMart useDataset getBM
 #' @export
 #' 
 #' @param object A \code{\linkS4class{gespeR}} or \code{\linkS4class{Phenotypes}} object
 #' @param organism String indicating the biomaRt organism, e.g. "hsapiens"
+#' @param ... Additional arguments
 #' @return data.frame containing gene identifier, gene symbol and phenotypic score
 if (!isGeneric("annotate.gsp")) {
   setGeneric(name="annotate.gsp",
@@ -255,7 +263,7 @@ setMethod(f="annotate.gsp",
 #' 
 #' @author Fabian Schmich
 #' @rdname TargetRelations-methods
-#' @exportMethod TargetRelations
+#' @export 
 #' 
 #' @param targets Path to a .rds target relations matrix file or matrix object
 #' @return A \code{\linkS4class{TargetRelations}} object 
@@ -302,7 +310,7 @@ setMethod(f="TargetRelations",
 #' @rdname loadValues-methods
 #' 
 #' @seealso \code{\link{unloadValues}}
-#' @exportMethod loadValues
+#' @export loadValues
 #' 
 #' @param object A \code{\linkS4class{TargetRelations}} object
 #' @return A \code{\linkS4class{TargetRelations}} object
@@ -348,9 +356,13 @@ setMethod(f="loadValues",
 #' @rdname unloadValues-methods
 #' 
 #' @seealso \code{\link{loadValues}}
-#' @exportMethod unloadValues
+#' @export unloadValues
 #' 
 #' @param object A \code{\linkS4class{TargetRelations}} object or \code{\linkS4class{gespeR}} object
+#' @param writeValues Indicator, whether to write values
+#' @param overwrite Indicator, wheter to overwrite values if file exists at path
+#' @param path The path to write out values
+#' @param ... Additional arguments
 #' @return A \code{\linkS4class{TargetRelations}} object or \code{\linkS4class{gespeR}} object
 setGeneric(name="unloadValues", 
            def=function(object, ...) {
@@ -413,9 +425,11 @@ setMethod(f="unloadValues",
 #' @rdname writeValues-methods
 #' 
 #' @seealso \code{\link{loadValues}} \code{\link{unloadValues}}
-#' @exportMethod writeValues
+#' @export
 #' 
 #' @param object A \code{\linkS4class{TargetRelations}} object
+#' @param overwrite Indicator, whether to overwrite values if file exists at path
+#' @param ... Additional arguments
 #' @return A \code{\linkS4class{TargetRelations}} object
 setGeneric(name="writeValues", 
            def=function(object, ...) {
@@ -446,17 +460,18 @@ setMethod(f="writeValues",
 #' Set the path of a A \code{\linkS4class{TargetRelations}} object object
 #' 
 #' @author Fabian Schmich
-#' @exportMethod path<-
+#' @export 
+#' @rdname path-methods
 #' 
 #' @param object A \code{\link{TargetRelations}} object
-#' @param path A string defining the path
+#' @param value A string defining the path
 #' @return A \code{\linkS4class{TargetRelations}} object with set path
 setGeneric(name="path<-", 
            def=function(object, value) {
              standardGeneric("path<-")
            })
 
-#' @rdname writeValues-methods
+#' @rdname path-methods
 setMethod(f="path<-",
           signature=signature(object="TargetRelations", value="character"),
           function(object, value) {
@@ -469,11 +484,12 @@ setMethod(f="path<-",
 #' Get GSPs
 #'
 #' @author Fabian Schmich
-#' @noRd
+#' @rdname gsp-methods
 #' @export
-#' 
+#' @param object A \code{\linkS4class{gespeR}} object 
 #' @return A \code{\linkS4class{Phenotypes}} object of GSPs
 setGeneric(name="gsp", def=function(object) standardGeneric("gsp"))
+#' @rdname gsp-methods
 setMethod(f="gsp",
           signature=signature(object="gespeR"),
           function(object) object@GSP
@@ -482,11 +498,12 @@ setMethod(f="gsp",
 #' Get SSPs
 #'
 #' @author Fabian Schmich
-#' @noRd
+#' @rdname ssp-methods
 #' @export
-#' 
+#' @param object A \code{\linkS4class{gespeR}} object 
 #' @return A \code{\linkS4class{Phenotypes}} object of SSPs
 setGeneric(name="ssp", def=function(object) standardGeneric("ssp"))
+#' @rdname ssp-methods
 setMethod(f="ssp",
           signature=signature(object="gespeR"),
           function(object) object@SSP
@@ -495,11 +512,12 @@ setMethod(f="ssp",
 #' Get stability
 #'
 #' @author Fabian Schmich
-#' @noRd
+#' @rdname stability-methods
 #' @export
-#' 
+#' @param object A \code{\linkS4class{gespeR}} object  
 #' @return A \code{\linkS4class{Phenotypes}} object of SSPs
 setGeneric(name="stability", def=function(object) standardGeneric("stability"))
+#' @rdname stability-methods
 setMethod(f="stability",
           signature=signature(object="gespeR"),
           function(object) {
@@ -518,11 +536,12 @@ setMethod(f="stability",
 #' Get values
 #'
 #' @author Fabian Schmich
-#' @noRd
+#' @rdname values-methods
 #' @export
-#' 
+#' @param object A \code{\linkS4class{TargetRelations}} object
 #' @return A \code{\linkS4class{Matrix}} object of TargetRelations values
 setGeneric(name="values", def=function(object) standardGeneric("values"))
+#' @rdname values-methods
 setMethod(f="values",
           signature=signature(object="TargetRelations"),
           function(object) {
@@ -534,11 +553,12 @@ setMethod(f="values",
 #' Get target.relations
 #'
 #' @author Fabian Schmich
-#' @noRd
-#' @export
-#' 
+#' @rdname target.relations-methods
+#' @export 
+#' @param object A \code{\linkS4class{gespeR}} object 
 #' @return A \code{\linkS4class{TargetRelations}} object 
 setGeneric(name="target.relations", def=function(object) standardGeneric("target.relations"))
+#' @rdname target.relations-methods
 setMethod(f="target.relations",
           signature=signature(object="gespeR"),
           function(object) {

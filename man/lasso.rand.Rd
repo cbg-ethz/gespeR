@@ -22,6 +22,8 @@ lasso.rand(x, y, weakness = 1, subsample = 1:nrow(x), dfmax = (ncol(x) +
 \item{standardize}{Indicator, wheter to standardize the design matrix}
 
 \item{intercept}{Indicator, whether to fit an intercept}
+
+\item{...}{Additional arguments to \code{\link{glmnet}}}
 }
 \value{
 A \code{\link{glmnet}} object

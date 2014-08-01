@@ -13,7 +13,7 @@ stability.selection(x, y, fraction = 0.5, threshold = 0.75, EV = 1,
 
 \item{intercept}{Indicator, whether to fit an intercept}
 
-\item{nboostrap}{The number of bootstrap samples}
+\item{nbootstrap}{The number of bootstrap samples}
 
 \item{fraction}{The fraction for each bootstrap sample}
 
@@ -24,6 +24,8 @@ stability.selection(x, y, fraction = 0.5, threshold = 0.75, EV = 1,
 \item{weakness}{The weakness parameter for randomised lasso}
 
 \item{ncores}{The number of cores for parallel computation}
+
+\item{...}{Additional arguments to \code{\link{lasso.rand}}}
 }
 \value{
 A list containing selected covariates with frequencies, and the fitted model

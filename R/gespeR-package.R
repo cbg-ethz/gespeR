@@ -12,7 +12,7 @@
 #' @example inst/example/gespeR-example.R
 #' @docType package
 #' @keywords package
-#' @references Fabian Schmich et. al,  Deconvoluting Off-Target Confounded RNA Interference Screens (2014). \href{}{DOI:}.
+#' @references Fabian Schmich et. al,  Deconvoluting Off-Target Confounded RNA Interference Screens (2014).
 #' @import methods Matrix glmnet
 #' @importFrom graphics plot
 

@@ -10,7 +10,7 @@
 Phenotypes(phenotypes, ...)
 
 \S4method{Phenotypes}{character}(phenotypes, type = c("SSP", "GSP"),
-  sep = "\\t", col.id = 1, col.score = 2, ...)
+  sep = "\\t", col.id = 1, col.score = 2)
 
 \S4method{Phenotypes}{cellHTS}(phenotypes, channel, sample)
 
@@ -23,9 +23,21 @@ Phenotypes(phenotypes, ...)
 \item{ids}{The phenotype identifiers}
 
 \item{type}{The type of phenotype (GSP, SSP)}
+
+\item{...}{Additional arguments}
+
+\item{sep}{The separator string}
+
+\item{col.id}{Column number for the identifier}
+
+\item{col.score}{Column number for the phenotype score}
+
+\item{channel}{The cellHTS channel identifier}
+
+\item{sample}{The cellHTS sample index}
 }
 \value{
-A \code{\link{Phenotype}} object
+A \code{\link{Phenotypes}} object
 }
 \description{
 This generic function can handle different types of inputs for phenotype data. It either takes a numeric vector or reads the values from a .txt file.

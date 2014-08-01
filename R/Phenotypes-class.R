@@ -4,7 +4,7 @@
 #' siRNA-specific knockdowns (SSP) or estimated gene-specific phenotypes (GSP).
 #' 
 #' @author Fabian Schmich
-#' @name Phenotypes
+#' @name Phenotypes-class
 #' @rdname Phenotypes-class
 #' @seealso \code{\link{Phenotypes}}
 #' 

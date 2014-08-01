@@ -3,10 +3,12 @@
 \alias{plot.concordance}
 \title{Plot concordance}
 \usage{
-plot.concordance(x, ...)
+\method{plot}{concordance}(x, ...)
 }
 \arguments{
 \item{x}{The data of class \code{\link{concordance}}}
+
+\item{...}{Additional parameters for plot}
 }
 \description{
 Plots boxplots of concordance evaluated between multiple Phenotype objects. Measures include the correlation (rho) between pairs of

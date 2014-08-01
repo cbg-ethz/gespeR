@@ -37,7 +37,7 @@ concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pair
     p1 <- scores(phenotypes[[pairs[r,1]]])
     p2 <- scores(phenotypes[[pairs[r,2]]])
     if (length(intersect(names(p1), names(p2))) < min.overlap) {
-      warn(sprintf("Minimal overlap not met by pair %d - %d.", pairs[r,1], pairs[r,2]))
+      warning(sprintf("Minimal overlap not met by pair %d - %d.", pairs[r,1], pairs[r,2]))
       cors[r] <- rbo.top[r] <- rbo.bottom[r] <- jaccard[r] <- NA
     } else {
       uids <- unique(names(p1), names(p2))
@@ -66,8 +66,10 @@ concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pair
 #' 
 #' @author Fabian Schmich
 #' @export
+#' @method plot concordance
 #' 
 #' @param x The data of class \code{\link{concordance}}
+#' @param ... Additional parameters for plot
 plot.concordance <- function(x, ...) {
   if (!require(ggplot2) | !require(reshape2)) {
     warning("You may want to install ggplot2 and reshape2 for prettier plots.")

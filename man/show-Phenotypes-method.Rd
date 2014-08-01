@@ -7,7 +7,7 @@
 \S4method{show}{Phenotypes}(object)
 }
 \arguments{
-\item{object}{A \code{\link{Phenotype}} object.}
+\item{object}{A \code{\linkS4class{Phenotypes}} object.}
 }
 \description{
 Show method for Phenotype objects

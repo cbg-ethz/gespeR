@@ -16,6 +16,14 @@ unloadValues(object, ...)
 }
 \arguments{
 \item{object}{A \code{\linkS4class{TargetRelations}} object or \code{\linkS4class{gespeR}} object}
+
+\item{writeValues}{Indicator, whether to write values}
+
+\item{overwrite}{Indicator, wheter to overwrite values if file exists at path}
+
+\item{path}{The path to write out values}
+
+\item{...}{Additional arguments}
 }
 \value{
 A \code{\linkS4class{TargetRelations}} object or \code{\linkS4class{gespeR}} object

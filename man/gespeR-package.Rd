@@ -17,7 +17,7 @@ print("Hello. This is is an example.")
 Fabian Schmich | Computational Biology Group, ETH ZURICH | \email{fabian.schmich@bsse.ethz.ch}
 }
 \references{
-Fabian Schmich et. al,  Deconvoluting Off-Target Confounded RNA Interference Screens (2014). \href{}{DOI:}.
+Fabian Schmich et. al,  Deconvoluting Off-Target Confounded RNA Interference Screens (2014).
 }
 \seealso{
 \code{\link{gespeR}}

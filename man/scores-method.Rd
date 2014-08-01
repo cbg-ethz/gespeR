@@ -14,6 +14,8 @@
 \item{object}{A \code{\linkS4class{gespeR}} or \code{\linkS4class{Phenotypes}} object}
 
 \item{type}{The type of phenotype scores (GSP, SSP)}
+
+\item{...}{Additional arguments}
 }
 \value{
 A named vector of scores for each phenotype identifier

@@ -7,6 +7,8 @@
 }
 \arguments{
 \item{x}{A \code{\linkS4class{Phenotypes}} object}
+
+\item{...}{Additional arguments for plot}
 }
 \description{
 Plot method for Phenotype objects

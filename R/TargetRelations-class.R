@@ -4,7 +4,7 @@
 #' for a knockdown library and a set of genes.
 #' 
 #' @author Fabian Schmich
-#' @name TargetRelations
+#' @name TargetRelations-class
 #' @rdname TargetRelations-class
 #' @seealso \code{\link{TargetRelations}}
 #' 

@@ -14,6 +14,8 @@
 \item{object}{A \code{\linkS4class{gespeR}} or \code{\linkS4class{Phenotypes}} object}
 
 \item{organism}{String indicating the biomaRt organism, e.g. "hsapiens"}
+
+\item{...}{Additional arguments}
 }
 \value{
 data.frame containing gene identifier, gene symbol and phenotypic score

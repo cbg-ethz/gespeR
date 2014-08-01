@@ -7,6 +7,8 @@
 }
 \arguments{
 \item{x}{A \code{\linkS4class{gespeR}} object}
+
+\item{...}{Additional paramters for plot}
 }
 \description{
 Plot method for \code{\linkS4class{gespeR}} objects
