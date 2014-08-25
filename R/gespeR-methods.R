@@ -49,6 +49,16 @@ setMethod("gespeR",
           }
 )
 
+#' @rdname gespeR-methods
+setMethod("gespeR",
+          signature = signature(phenotypes="numeric", target.relations="Matrix"),
+          function(phenotypes, target.relations, mode=c("cv", "stability"), ...){
+            phenotypes <- Phenotypes(phenotypes=phenotypes, ids=rownames(phenotypes), type="SSP")
+            target.relations <- TargetRelations(target.relations)
+            gespeR(phenotypes, target.relations, mode, ...)
+          }
+)
+
 #' Constructor for Phenotypes objects
 #' 
 #' This generic function can handle different types of inputs for phenotype data. It either takes a numeric vector or reads the values from a .txt file.
@@ -82,7 +92,7 @@ setMethod(f="Phenotypes",
           function(phenotypes, type=c("SSP", "GSP"), sep="\t", col.id=1, col.score=2) {
             type <- match.arg(type)
             if (!file.exists(phenotypes)) {
-              stop(sprintf("File not found: %s", phenotype))
+              stop(sprintf("File not found: %s", phenotypes))
             } else {
               p <- read.delim(phenotypes, sep=sep, stringsAsFactors=F)
             }
@@ -109,7 +119,13 @@ setMethod(f="Phenotypes",
           function(phenotypes, ids=NULL, type=c("SSP", "GSP")) {
             type <- match.arg(type)
             if (is.null(ids)) {
-              ids <- paste("id", 1:length(phenotypes), sep="_")
+              if (!is.null(rownames(phenotypes))) {
+                ids <- rownames(phenotypes)
+              } else if (!is.null(names(phenotypes))) {
+                ids <- names(phenotypes)
+              } else {
+                ids <- paste("id", 1:length(phenotypes), sep="_")  
+              }
             }
             new("Phenotypes", type=type, ids=ids, values=phenotypes)
           }
@@ -295,7 +311,7 @@ setMethod(f="TargetRelations",
           signature=signature(targets="Matrix"),
           function(targets) {
             new("TargetRelations",
-                path=NULL,
+                path="",
                 siRNAs=rownames(targets),
                 values=targets,
                 genes=colnames(targets),

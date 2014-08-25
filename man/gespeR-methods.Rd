@@ -3,12 +3,16 @@
 \name{gespeR}
 \alias{gespeR}
 \alias{gespeR,Phenotypes,TargetRelations-method}
+\alias{gespeR,numeric,Matrix-method}
 \title{Deconvolute off-target confounded RNAi knockdown phenotypes.}
 \usage{
 gespeR(phenotypes, target.relations, ...)
 
 \S4method{gespeR}{Phenotypes,TargetRelations}(phenotypes, target.relations,
   mode = c("cv", "stability"), ...)
+
+\S4method{gespeR}{numeric,Matrix}(phenotypes, target.relations, mode = c("cv",
+  "stability"), ...)
 }
 \arguments{
 \item{phenotypes}{The siRNA-spefic phenotypes}

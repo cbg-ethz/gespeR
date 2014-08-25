@@ -136,17 +136,15 @@ plot.Phenotypes <- function(x, ...) {
 #' Subsetting for Phenotype objects.
 #' 
 #' @author Fabian Schmich
-#' @name Extract-Phenotypes
-#' @rdname Extract-Phenotypes-methods
-#' 
-#' @export
-#' 
+#'
 #' @param x A \code{\linkS4class{Phenotypes}} object
 #' @param i The subsetting indices
+#' @param j Subsetting indices (not used)
+#' @param ... Additional parameters
 #' @return A \code{\linkS4class{Phenotypes}} object
 setMethod(f="[",
-          signature=signature(x="Phenotypes"),
-          def=function(x, i){
+          signature=signature(x="Phenotypes", i="ANY"),
+          def=function(x, i, ...){
             #             if (any(is.na(i)))
             #               stop("subscript 'i' contains NA")      
             result = new("Phenotypes", 
@@ -161,18 +159,15 @@ setMethod(f="[",
 #' Subsetting for TargetRelations objects.
 #' 
 #' @author Fabian Schmich
-#' @name Extract-TargetRelations
-#' @rdname Extract-TargetRelations-methods
-#' 
-#' @export
-#' 
+#'
 #' @param x A \code{\linkS4class{TargetRelations}} object
 #' @param i The row subsetting indices (siRNAs)
 #' @param j The column subsetting indeces (genes)
+#' @param ... Additional parameters
 #' @return A \code{\linkS4class{TargetRelations}} object
 setMethod(f="[",
-          signature=signature(x="TargetRelations"),
-          def=function(x, i, j){
+          signature=signature(x="TargetRelations", i="ANY", j="ANY"),
+          def=function(x, i, j, ...){
             if (missing(i)) i <- 1:nrow(x@values)
             if (missing(j)) j <- 1:ncol(x@values)
             #             if (any(is.na(i)) | any(is.na(j)))
