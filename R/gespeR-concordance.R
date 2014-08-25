@@ -77,10 +77,11 @@ plot.concordance <- function(x, ...) {
   } else {
     x <- melt(data.frame(x[1:5]), id.vars=c("test.pair"), variable.name="measure")
     x$measure <- factor(x$measure, levels=c("cor", "rbo.top", "rbo.bottom", "jaccard"))
-    ggplot(data=x, aes(x=measure, y=value, colour=measure)) + 
+    ggplot(data=x, aes_string(x="measure", y="value", colour="measure")) + 
       geom_boxplot(outlier.size=0, width=0.85, na.rm=T) +
       #       scale_x_discrete(labels=c(expression(rho), expression(rbo["" %down% ""]), expression(rbo["" %up% ""]), "J")) +
       xlab("") + ylab("") +
+      ylim(c(min(0, x$value), 1)) +
       theme_bw() +
       theme(legend.position="none",
             strip.background = element_blank(),
