@@ -1,0 +1,95 @@
+%&pdflatex
+\documentclass[fleqn,a4paper]{article}
+\usepackage{a4wide}
+
+\usepackage{amsmath, amssymb}
+\usepackage{charter}
+\usepackage[scaled=0.9]{helvet}
+\renewcommand{\sfdefault}{phv}
+\usepackage[sf]{titlesec}
+
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\usepackage{breakurl}
+
+\newcommand{\Dir}{\operatorname{Dir}}
+\newcommand{\B}{\operatorname{B}}
+\newcommand{\E}{\operatorname{E}}
+\newcommand{\Beta}{\operatorname{Beta}}
+\newcommand{\MAP}{\mathrm{MAP}}
+\newcommand{\Mult}{\operatorname{Mult}}
+\newcommand{\Bin}{\operatorname{Bin}}
+\renewcommand{\bold}{\textbf}
+
+%\VignetteIndexEntry{An R package estimating gene-specific phenotypes from off-target confounded RNAi screens.}
+%\VignetteDepends{gespeR}
+%\VignetteEngine{knitr::knitr}
+
+<<setup, include=FALSE, cache=FALSE>>=
+require(knitr)
+# set global chunk options
+opts_chunk$set(fig.path='tmp/gespeR-', fig.align='center', fig.show='hold', fig.width=4, fig.height=4, out.width='.4\\linewidth', dpi=150)
+options(replace.assign=TRUE, width=75)
+knit_hooks$set(nice=function(before, options, envir) {
+  		if (before) par(mar = c(4, 4, .1, .1), mgp=c(2.5, 1, 0), bty="n")
+		})
+@
+
+\begin{document}
+
+\title{Deconvoluting off-target confounded RNAi screens with \texttt{gespeR}}
+\author{Fabian Schmich}
+
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+This package provides algorithms for calling single nucleotide variants in deep sequencing experiments of polyclonal samples. 
+The package uses a clonal control experiment for
+estimating the local error rate and tests whether the observed nucleotide frequencies differ between test and control. 
+The basic model is a binomial model for the counts $X_{i,j}$ and $Y_{i,j}$ of nucleotide $j$ at  position $i$, in the test and the control experiment, respectively:
+\begin{align}
+X_{i,j} &\sim \operatorname{Bin}(n_i, p_{i,j})\cr
+Y_{i,j} &\sim \operatorname{Bin}(m_i, q_{i,j}).
+\end{align}
+Here $n_i$ and $m_i$ denote the coverage in the two experiments, and $p_{i,j}$ and $q_{i,j}$ are learned from the data.
+The presence of an SNV in the test experiment amounts to testing the hypothesis $H_1: p_{i,j} > q_{i,j}$ against the null-hypothesis $H_0:  p_{i,j} = q_{i,j}$.
+The deepSNV algorithm uses likelihood ratio test with a $\chi^2_1$-distribtution. 
+
+
+For more information and for citing the \texttt{gespeR} package please use:
+\begin{itemize}
+\item
+<<echo=FALSE, results='asis'>>=
+	print(citation("gespeR")[1], style="LaTeX")
+@
+\end{itemize}
+
+
+\section{Working example}
+In this example, we load some real world data. The data of length 1,512 nt were sequenced with a Roche 454 Junior sequencer at about 500x coverage. They consist of 
+a mixture of two HIV clones at 10\% and 90\%(test) and a clonal control. The data were aligned to the HXB2 reference genome with novoalign, and can be downloaded
+from the authors' website, or attached . We first load the package and define the genomic \texttt{region} of interest:
+<<>>=
+  library(gespeR)
+  regions <- data.frame(chr="B.FR.83.HXB2_LAI_IIIB_BRU_K034", start = 2074, stop=3585)
+@
+
+
+\section{sessionInfo()}
+<<echo=FALSE, results='asis'>>=
+    toLatex(sessionInfo())
+@
+
+\end{document}
