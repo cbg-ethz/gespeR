@@ -5,7 +5,6 @@
 #' linear regression model can be fitted using two different strategies. (a) Cross-validation over
 #' regularization parameters optimising the mean-squared-error of the model and (b) stability selection
 #' of covariates (genes) based on a method by Nicolai Meinshausen et al.
-#' 
 #' @name gespeR-package
 #' @rdname gespeR-package
 #' @aliases gespeRpkg
@@ -17,7 +16,14 @@
 #' @import methods Matrix glmnet
 #' @importFrom graphics plot
 #' @seealso \code{\link{gespeR}}
-
 NA
 
-#TODO: add data sets
+#' Example phenotype and target relations data
+#' 
+#' The data set contains simulated data for four screens. Each screen consists of a phenotype vector
+#' and target relations between siRNAs and genes, i.e. which siRNA binds which genes (on- and off-targets).
+#' @docType data
+#' @examples pheno.a <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package="gespeR"), type = "SSP", col.id = 1, col.score = 2)
+#' targets.a <- TargetRelations(system.file("extdata", "TR_screen_A.rds", package="gespeR"))
+#' @name simData
+NA
