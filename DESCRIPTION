@@ -11,11 +11,13 @@ Depends:
     doMC
 Suggests:
     ggplot2,
-    reshape2
+    reshape2,
+    knitr
+VignetteBuilder: knitr
 Type: Package
 Lazyload: yes
 Title: Gene-Specific Phenotype EstimatoR
-Version: 1.0
+Version: 0.99
 Date: 2014-07-29
 Author: Fabian Schmich
 Maintainer: Fabian Schmich <fabian.schmich@bsse.ethz.ch>

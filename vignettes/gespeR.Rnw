@@ -1,0 +1,163 @@
+%&pdflatex
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=false,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\setlength\parindent{0pt}
+
+%\VignetteIndexEntry{An R package for deconvoluting off-target confounded RNAi screens}
+%\VignetteDepends{gespeR}
+%\VignetteEngine{knitr::knitr}
+
+\begin{document}
+<<setup_knitr, include=FALSE, cache=FALSE>>=
+library(knitr)
+## set global chunk options
+opts_chunk$set(fig.path='tmp/gespeR-', fig.align='center', fig.show='hold', par=TRUE, fig.width = 4, fig.height = 4, out.width='.75\\textwidth', dpi=150)
+@
+
+\title{Estimating Gene-Specific Phenotpes with \texttt{gespeR}}
+\author{Fabian Schmich}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+This package provides algorithms for deconvoluting off-target confounded phenotypes from RNA interference screens. The packages uses (predicted) siRNA-to-gene target relations in a regularised linear regression model, in order to infer individual gene-specific phenotype (GSP) contributions. The observed siRNA-specific phenotypes (SSPs) for reagent $i = 1,\ldots,n$ as the weighted linear sum of GSPs of all targeted genes $j = 1,\ldots,p$
+\begin{align}
+Y_i &= x_{i1}\beta_j + \ldots + x_{ip}\beta_p + \epsilon_i,
+\end{align}
+where $x_{ij}$ represents the strength of knockdown of reagent $i$ on gene $j$, $\beta_j$ corresponds to the GSP of gene $j$ and $\epsilon_i$ is the error term for SSP $i$. The linear reegression model is fit using elastic net regularization:
+\begin{align}
+\hat{\beta} &= \underset{\beta}{\text{argmin}} \left\{ \sum_{i=1}^n \left( y_i - \sum_{j=1}^p x_{ij}\beta_j \right)^2 + \lambda \sum_{j=1}^p \left(  \alpha\beta_j^2 + \left(1 - \alpha \right) |\beta_j| \right) \right\}.
+\end{align}
+Here $\lambda$ determines the amount of regualrisation and $\alpha$ is the mixing parameter between the ridge and lasso penalty with $0 \leq \alpha \leq 1$. The elastic net penalty selects variables like the lasso and shrinks together the coefficients of correlated predictors like ridge. This allows for a sparse solution of nonzero GSPs, while retaining simultaneous selection of genes with similar RNAi reagent binding patterns in their respective 3' UTRs. For more information and for citing the \texttt{gespeR} package please use:
+\begin{itemize}
+\item[]
+<<citation, echo = FALSE, results = "asis">>=
+	print(citation("gespeR")[1], style="LaTeX")
+@
+\end{itemize}
+
+\section{Working Example}
+In this example, we load first load simulated phenotypic readout and siRNA-to-gene target relations. The toy data consists of four screens (A, B, C, D) of 1,000 siRNAs and a limited gene universe of 1,500 genes. First, we load the package:
+<<load_gespeR, message = FALSE>>=
+  library(gespeR)
+@
+Now the phenotypes and target relations can be initialised using the \texttt{Phenotypes} and \texttt{TargetRelations} commands. First, we load the four phenotypes vectors:
+<<load_phenotypes>>=
+  phenos <- lapply(LETTERS[1:4], function(x) {
+    sprintf("Phenotypes_screen_%s.txt", x)
+  })
+  phenos <- lapply(phenos, function(x) {
+    Phenotypes(system.file("extdata", x, package="gespeR"),
+      type = "SSP",
+      col.id = 1,
+      col.score = 2)
+  })
+  show(phenos[[1]])
+@
+
+A visual representation of the phenotypes can be obtained with the \texttt{plot} method:
+<<plot_phenotypes>>=
+  plot(phenos[[1]])
+@
+
+Now, we load the target relations for all four screens using the constructor of the \texttt{TargetRelations} class:
+<<load_TRs>>=
+  tr <- lapply(LETTERS[1:4], function(x) {
+    sprintf("TR_screen_%s.rds", x)
+  })
+  tr <- lapply(tr, function(x) {
+    TargetRelations(system.file("extdata", x, package="gespeR"))
+  })
+  show(tr[[2]])
+@
+
+For large data sets, e.g. genome--wide screens, target relations objects can become very big and the user may not want to keep all values in the RAM. For this purpose, we can use the \texttt{unloadValues} method. In this example, we write the values to a temp-file, i.e. not the original source file, which may be required, when we do not want to overwrite exisiting data, after, for instance, subsetting the target relations object.
+<<unload_TRs>>=
+  # Size of object with loaded values
+  format(object.size(tr[[1]]), units = "Kb")
+  tempfile <- paste(tempfile(pattern = "file", tmpdir = tempdir()), ".rds", sep="")
+  tr[[1]] <- unloadValues(tr[[1]], writeValues = TRUE, path = tempfile)
+
+  # Size of object after unloading
+  format(object.size(tr[[1]]), units = "Kb")
+
+  # Reload values
+  tr[[1]] <- loadValues(tr[[1]])
+@
+
+
+In order to obtain deconvoluted gene-specific phenotypes (GSPs), we fit four models on the four separate data sets using cross validation by setting \texttt{mode = "cv"}. We set the elastic net mixing parameter to 0.5 and use only one core in this example:
+<<fit_cv>>=
+  res.cv <- lapply(1:length(phenos), function(i) {
+    gespeR(phenotypes = phenos[[i]],
+          target.relations = tr[[i]],
+           mode = "cv",
+           alpha = 0.5,
+           ncores = 1)
+  })
+@
+
+The \texttt{ssp} and \texttt{gsp} methods can be used to obtain SSP and GSP scores from a \texttt{gespeR} object:
+<<ssp_gsp_scores>>=
+  ssp(res.cv[[1]])
+  gsp(res.cv[[1]])
+  head(scores(res.cv[[1]]))
+@
+
+The fitted models can also be visualised using the \texttt{plot} method:
+<<plot_cv>>=
+  plot(res.cv[[1]])
+@
+
+
+Another way to fit \texttt{gespeR} models is to use stability selection:
+<<fit_stability>>=
+  res.stab <- lapply(1:length(phenos), function(i) {
+    gespeR(phenotypes = phenos[[i]],
+      target.relations = tr[[i]],
+      mode = "stability",
+      nbootstrap = 100,
+      fraction = 0.67,
+      threshold = 0.75,
+      EV = 1,
+      weakness = 0.8,
+      ncores = 1)
+  })
+@
+
+Again, these models can be visualised using the \texttt{plot} method. This time, the phenotypic scores are plotted against their stability value:
+<<plot_stability>>=
+  plot(res.stab[[1]])
+@
+
+The \texttt{concordance} method can be used to compute the concordance between ranked lists of phenotypes. Here we compute concordance between all pairs of GSPs, as well as between all pairs of SSPs, from all four data sets:
+<<concordance>>=
+  conc.gsp <- concordance(lapply(res.stab, gsp))
+  conc.ssp <- concordance(lapply(res.stab, ssp))
+@
+
+We can visualise the \texttt{concordance} objects using the \texttt{plot} method:
+<<plot_concordance, out.width='.45\\textwidth', message = FALSE>>=
+  plot(conc.gsp) + ggtitle("GSPs\n")
+  plot(conc.ssp) + ggtitle("SSPs\n")
+@
+
+
+\section{sessionInfo()}
+<<session, echo=FALSE, results = "asis">>=
+    toLatex(sessionInfo())
+@
+
+\end{document}

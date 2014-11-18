@@ -7,14 +7,16 @@
 #' of covariates (genes) based on a method by Nicolai Meinshausen et al.
 #' 
 #' @name gespeR-package
+#' @rdname gespeR-package
+#' @aliases gespeRpkg
 #' @author Fabian Schmich | Computational Biology Group, ETH ZURICH | \email{fabian.schmich@@bsse.ethz.ch}
-#' @seealso \code{\link{gespeR}}
 #' @example inst/example/gespeR-example.R
 #' @docType package
 #' @keywords package
-#' @references Fabian Schmich et. al,  Deconvoluting Off-Target Confounded RNA Interference Screens (2014).
+#' @references Fabian Schmich et. al, Deconvoluting Off-Target Confounded RNA Interference Screens (2014).
 #' @import methods Matrix glmnet
 #' @importFrom graphics plot
+#' @seealso \code{\link{gespeR}}
 
 NA
 

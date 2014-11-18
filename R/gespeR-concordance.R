@@ -7,9 +7,6 @@
 #' 
 #' @author Fabian Schmich
 #' @export
-#' @seealso \code{\linkS4class{Phenotypes}}
-#' @seealso \code{\link{plot.concordance}}
-#' @seealso \code{\link{rbo}}
 #' 
 #' @param ... The phenotypes to be evaluated for concordance
 #' @param min.overlap The minimum number of overlapping genes required
@@ -24,9 +21,14 @@
 #' \item{rbo.top}{The rank biased overlap of genes evaluated at the top of the ranked list}
 #' \item{rbo.bottom}{The rank biased overlap of genes evaluated at the bottom of the ranked list}
 #' \item{jaccard}{The Jaccard index of selected genes}
+#' 
+#' @seealso \code{\linkS4class{Phenotypes}}
+#' @seealso \code{\link{plot.concordance}}
+#' @seealso \code{\link{rbo}}
 concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pairwise.complete.obs", rbo.p=0.95, rbo.k=NULL, rbo.mid=NULL) {
   phenotypes <- list(...)
-  if(all(sapply(phenotypes, is, class2="Phenotypes")) == FALSE) {
+  if(is.list(phenotypes[[1]])) phenotypes <- unlist(phenotypes, recursive = FALSE)
+  if(any(sapply(phenotypes, is, class2="Phenotypes")) == FALSE) {
     stop("Not all elements for comparison are Phenotype objects.")
   }
   # Find all pairs of phenotypes
@@ -77,15 +79,28 @@ plot.concordance <- function(x, ...) {
   } else {
     x <- melt(data.frame(x[1:5]), id.vars=c("test.pair"), variable.name="measure")
     x$measure <- factor(x$measure, levels=c("cor", "rbo.top", "rbo.bottom", "jaccard"))
-    ggplot(data=x, aes_string(x="measure", y="value", colour="measure")) + 
-      geom_boxplot(outlier.size=0, width=0.85, na.rm=T) +
-      #       scale_x_discrete(labels=c(expression(rho), expression(rbo["" %down% ""]), expression(rbo["" %up% ""]), "J")) +
+    pl <- ggplot(data=x, aes_string(x="measure", y="value")) + 
+      geom_boxplot(outlier.size=0, width=0.85, na.rm = T) +
+      scale_x_discrete(labels = c(
+        cor = "Correlation",
+        rbo.top = "RBO (top)",
+        rbo.bottom = "RBO (bottom)",
+        jaccard = "Jaccard Index"
+        )) +
+#       scale_x_discrete(labels = c(
+#         cor = expression(rho),
+#         rbo.top = expression(rbo["" %down% ""]),
+#         rbo.bottom = expression(rbo["" %up% ""]),
+#         jaccard = expression("J")
+#       )) +
       xlab("") + ylab("") +
       ylim(c(min(0, x$value), 1)) +
-      theme_bw() +
-      theme(legend.position="none",
+      theme_bw(base_size = 14) +
+      theme(legend.position = "none",
+            axis.text.x = element_text(angle = 45, hjust = 1),
             strip.background = element_blank(),
-            panel.border = element_rect(colour = "black"))  
+            panel.border = element_rect(colour = "black"))
+    return(pl)
   }
 }
 
@@ -98,7 +113,6 @@ plot.concordance <- function(x, ...) {
 #' 
 #' @author Fabian Schmich
 #' @export
-#' @seealso \code{\link{concordance}}
 #' 
 #' @param s List 1
 #' @param t List 2
@@ -107,6 +121,8 @@ plot.concordance <- function(x, ...) {
 #' @param side Evaluate similarity between the top or the bottom of the ranked lists
 #' @param mid Set the mid point to for example only consider positive or negative scores
 #' @return rank biased overlap (rbo)
+#' 
+#' @seealso \code{\link{concordance}}
 rbo <- function(s, t, p, k=floor(max(length(s), length(t))/2), side=c("top", "bottom"), mid=NULL) {
   side <- match.arg(side)
   if (!is.numeric(s) | !is.numeric(t))

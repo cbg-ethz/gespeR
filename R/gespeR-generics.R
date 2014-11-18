@@ -1,21 +1,12 @@
-#' Summary generic
-#'
-#' @author Fabian Schmich
-#' @name summary
 #' @export
-#'
 if (!isGeneric("summary")) {
   setGeneric(name="summary",
              def=function(object, ...) {
-                standardGeneric("summary")
+               standardGeneric("summary")
              },
              package="gespeR"
-            )  
+  )  
 }
-
-#' Summary method for \code{\linkS4class{gespeR}} objects
-#' 
-#' @author Fabian Schmich
 setMethod(f="summary",
           signature=signature(object="gespeR"),
           definition=function(object) {
@@ -37,12 +28,6 @@ setMethod(f="summary",
           }
 )
 
-
-#' Show method for gespeR objects
-#' 
-#' @author Fabian Schmich
-#' 
-#' @param object A \code{\linkS4class{gespeR}} object
 setMethod(f="show",
           signature=signature(object="gespeR"),
           definition=function(object) {
@@ -64,49 +49,18 @@ setMethod(f="show",
             }
           }
 )
-
-#' Plot method for \code{\linkS4class{gespeR}} objects
-#' 
-#' @author Fabian Schmich
-#' @export
-#' @method plot gespeR
-#' 
-#' @param x A \code{\linkS4class{gespeR}} object
-#' @param ... Additional paramters for plot
-plot.gespeR <- function(x, ...) {
-  if (x@is.fitted) {
-    switch(x@model$type,
-           "cv"=hist(scores(x, "GSP"), xlab="Scores", main="Gene-Specific Phenotypes", ...),
-           "stability"=plot(x@model$coefficients, x@model$stability$frequency[x@model$stability$selection], xlab="Scores", ylab="Stability", main="Gene-Specific Phenotypes", ...)
-    )
-  } else {
-    hist(scores(x, "SSP"), xlab="Scores", main="siRNA-Specific Phenotypes", ...)
-  }
-}
-
-
-
-#' Show method for Phenotype objects
-#' 
-#' @author Fabian Schmich
-#' @param object A \code{\linkS4class{Phenotypes}} object.
 setMethod("show",
           signature=signature("Phenotypes"),
           function(object) {
             cat(sprintf("%d %s Phenotypes\n\n", length(object@ids), object@type))
             if (length(object@ids) > 5) {
-              print(data.frame(IDs=head(object@ids, 5), Scores=head(object@values, 5)))
+              print(data.frame(IDs=head(object@ids, 5), Scores=head(object@values, 5), row.names = NULL))
               cat("...\n")            
             } else {
               print(data.frame(IDs=object@ids, Scores=object@values))
             }
           }
 )
-
-#' Show method for TargetRelations objects
-#' 
-#' @author Fabian Schmich
-#' @param object A \code{\link{TargetRelations}} object.
 setMethod("show",
           signature=signature("TargetRelations"),
           function(object) {            
@@ -120,19 +74,6 @@ setMethod("show",
           }
 )
 
-#' Plot method for Phenotype objects
-#' 
-#' @param x A \code{\linkS4class{Phenotypes}} object
-#' @param ... Additional arguments for plot
-#' @return NULL
-#' @method plot Phenotypes
-#' @export
-#' @author Fabian Schmich 
-plot.Phenotypes <- function(x, ...) {
-  hist(x@values, main=sprintf("%s Phenotypes", x@type), xlab="Scores", ...)
-}
-
-
 #' Subsetting for Phenotype objects.
 #' 
 #' @author Fabian Schmich
@@ -140,6 +81,7 @@ plot.Phenotypes <- function(x, ...) {
 #' @param x A \code{\linkS4class{Phenotypes}} object
 #' @param i The subsetting indices
 #' @param j Subsetting indices (not used)
+#' @param drop Drop Redundant Extent Information
 #' @param ... Additional parameters
 #' @return A \code{\linkS4class{Phenotypes}} object
 setMethod(f="[",
@@ -163,6 +105,7 @@ setMethod(f="[",
 #' @param x A \code{\linkS4class{TargetRelations}} object
 #' @param i The row subsetting indices (siRNAs)
 #' @param j The column subsetting indeces (genes)
+#' @param drop Drop Redundant Extent Information
 #' @param ... Additional parameters
 #' @return A \code{\linkS4class{TargetRelations}} object
 setMethod(f="[",
