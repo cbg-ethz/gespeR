@@ -20,6 +20,10 @@ A \code{\linkS4class{TargetRelations}} object with set path
 \description{
 Set the path of a a \code{\linkS4class{TargetRelations}} object object
 }
+\examples{
+trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+path(trels) <- "/dev/null"
+}
 \author{
 Fabian Schmich
 }

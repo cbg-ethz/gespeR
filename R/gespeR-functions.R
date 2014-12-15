@@ -3,18 +3,12 @@
 #' @author Fabian Schmich
 #' @noRd
 #' 
-#' @import doMC
-#' 
 #' @param SSP The siRNA-specific phenotypes
 #' @param targets The siRNA-to-gene target relations
 #' @param alpha The \code{\link{glmnet}} mixing parameter
 #' @param ncores The number of cores for parallel computation
 #' @return A list containing the fitted model and used paramers
 .gespeR.cv <- function(SSP, targets, alpha, ncores=1) {
-  if (ncores > 1) {
-    #require(doMC)
-    registerDoMC(cores=ncores)
-  }
   model <- cv.glmnet(x=targets, y=SSP,
                      family="gaussian",
                      alpha=alpha,
@@ -91,6 +85,10 @@
 #'  @param intercept Indicator, whether to fit an intercept
 #'  @param ... Additional arguments to \code{\link{glmnet}}
 #'  @return A \code{\link{glmnet}} object
+#'  @examples
+#'  y <- rnorm(50)
+#'  x <- matrix(runif(50 * 20), ncol = 20)
+#'  lasso.rand(x = x, y = y)
 lasso.rand <- function(x, y,
                        weakness=1,
                        subsample=1:nrow(x),
@@ -115,7 +113,11 @@ lasso.rand <- function(x, y,
 #' Based on Meinshausen and Buehlmann (2009)
 #' 
 #' @author Fabian Schmich
-#' @import doMC
+#' 
+#' @import doParallel
+#' @import foreach
+#' @import parallel
+#' 
 #' @export
 #' 
 #' @param x The design matrix
@@ -150,7 +152,9 @@ stability.selection <- function(x, y,
   #   cat(sprintf("\nq = %d\n", q))
   
   # Subsampling
-  registerDoMC(cores=ncores)
+#   registerDoMC(cores=ncores)
+  cl <- makeCluster(ncores)
+  registerDoParallel(cl)
   sel.mat <- foreach (b = 1:nbootstrap, .combine=rbind) %dopar% {
     # Current sub-sampled data
     sel <- sample(1:n, n.sel, replace=FALSE)        
@@ -171,6 +175,9 @@ stability.selection <- function(x, y,
   colnames(x.sel) <- colnames(x)[sel.current]
   model <- lm(y ~ x.sel - 1)
   
+  # Stop the cluster
+  stopCluster(cl)
+
   out <- list(model=model, matrix=sel.mat, frequency=freq, selection=sel.current)
   return(out)  
 }

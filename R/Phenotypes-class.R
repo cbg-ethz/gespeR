@@ -8,7 +8,6 @@
 #' @rdname Phenotypes-class
 #' @aliases Phenotypes
 #' 
-#' @example inst/example/gespeR-example.R
 #' @exportClass Phenotypes
 #' 
 #' @slot type The type of represented phenotypes (i.e., "SSP" or "GSP")
@@ -21,6 +20,12 @@
 #' @seealso \code{\link{ssp}}
 #' @seealso \code{\link{scores}}
 #' @seealso \code{\link{concordance}}
+#' 
+#' @examples
+#' phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
 setClass(Class="Phenotypes",
          representation=representation(
            type="character",
@@ -64,7 +69,7 @@ setMethod(f="Phenotypes",
             if (!file.exists(phenotypes)) {
               stop(sprintf("File not found: %s", phenotypes))
             } else {
-              p <- read.delim(phenotypes, sep=sep, stringsAsFactors=F)
+              p <- read.delim(phenotypes, sep=sep, stringsAsFactors = FALSE)
             }
             new("Phenotypes", type = type, ids = p[,col.id], values = p[,col.score])
           }
@@ -108,6 +113,12 @@ setMethod(f="Phenotypes",
 #' 
 #' @param object A \code{\linkS4class{Phenotypes}} object
 #' @return A \code{\linkS4class{Phenotypes}} object without NA scores values
+#' @examples
+#' phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
+#' na.rem(phenos)
 setGeneric(name="na.rem", 
            def=function(object) {
              standardGeneric("na.rem")
@@ -123,12 +134,13 @@ setMethod(f="na.rem",
 
 #' Plot method for Phenotype objects
 #' 
-#' @param x A \code{\linkS4class{Phenotypes}} object
-#' @param ... Additional arguments for plot
 #' @return NULL
 #' @method plot Phenotypes
 #' @export
 #' @author Fabian Schmich 
+#' @param x A \code{\linkS4class{Phenotypes}} object
+#' @param ... Additional arguments for plot
+#' @return Histogram of scores
 plot.Phenotypes <- function(x, ...) {
   hist(x@values, main=sprintf("%s Phenotypes", x@type), xlab="Scores", ...)
 }

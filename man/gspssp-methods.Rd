@@ -24,6 +24,11 @@ A \code{\linkS4class{Phenotypes}} object of GSPs and SSPs, respectively
 \description{
 Retrieve GSPs and SSPs from \code{\linkS4class{gespeR}} objects
 }
+\examples{
+data(stabilityfits)
+gsp(stabilityfits$A)
+ssp(stabilityfits$B)
+}
 \author{
 Fabian Schmich
 }

@@ -20,6 +20,15 @@ List containing the matched targets and phenotypes
 \description{
 Join a TargetRelations object and a Phenotype object
 }
+\examples{
+phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+type = "SSP",
+col.id = 1,
+col.score = 2)
+trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+phenos <- phenos[1:17]
+stripped_down <- join(targets = trels, phenotypes = phenos)
+}
 \author{
 Fabian Schmich
 }

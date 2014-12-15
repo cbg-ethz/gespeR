@@ -7,8 +7,6 @@
 #' @name TargetRelations-class
 #' @rdname TargetRelations-class
 #' @aliases TargetRelations
-#' 
-#' @example inst/example/gespeR-example.R
 #' @exportClass TargetRelations
 #' 
 #' @slot siRNAs The siRNA identifiers
@@ -23,6 +21,9 @@
 #' @seealso \code{\link{writeValues}}
 #' @seealso \code{\link{values}}
 #' @seealso \code{\link{path<-}}
+#' 
+#' @examples
+#' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
 setClass(Class="TargetRelations",
          representation=representation(
            siRNAs="character",
@@ -97,6 +98,9 @@ setMethod(f="TargetRelations",
 #' @param object A \code{\linkS4class{TargetRelations}} object
 #' @param value A string defining the path
 #' @return A \code{\linkS4class{TargetRelations}} object with set path
+#' @examples
+#' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+#' path(trels) <- "/dev/null"
 setGeneric(name="path<-", 
            def=function(object, value) {
              standardGeneric("path<-")
@@ -122,6 +126,9 @@ setMethod(f="path<-",
 #' @return A \code{\link{Matrix}} object
 setGeneric(name="values", def=function(object) standardGeneric("values"))
 #' @rdname values-methods
+#' @examples
+#' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+#' values(trels)[1:5, 1:5]
 setMethod(f="values",
           signature=signature(object="TargetRelations"),
           function(object) {

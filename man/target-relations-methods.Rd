@@ -18,6 +18,10 @@ A \code{\linkS4class{TargetRelations}} object
 \description{
 Retrieve siRNA-to-gene target relations from a \code{\linkS4class{gespeR}} object.
 }
+\examples{
+data(stabilityfits)
+target.relations(stabilityfits$A)
+}
 \author{
 Fabian Schmich
 }

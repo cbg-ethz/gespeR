@@ -10,6 +10,9 @@
 
 \item{...}{Additional paramters for plot}
 }
+\value{
+Histogram of SSPs or GSPs
+}
 \description{
 Plot method for \code{\linkS4class{gespeR}} objects
 }

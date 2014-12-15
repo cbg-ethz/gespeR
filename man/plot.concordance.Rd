@@ -10,6 +10,9 @@
 
 \item{...}{Additional parameters for plot}
 }
+\value{
+Boxplots of concordance measures
+}
 \description{
 Plots boxplots of concordance evaluated between multiple Phenotype objects. Measures include the correlation (rho) between pairs of
 phenotypes for the same gene, the rank biased overlap (rbo) of the top and bottom of ranked lists, and the

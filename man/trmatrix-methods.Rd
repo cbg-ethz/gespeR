@@ -46,6 +46,12 @@ A \code{\linkS4class{TargetRelations}} object or \code{\linkS4class{gespeR}} obj
 \description{
 Load, unload or write to file the values of a \code{\linkS4class{TargetRelations}} object
 }
+\examples{
+data(stabilityfits)
+\dontrun{
+loadValues(stabilityfits$A)
+}
+}
 \author{
 Fabian Schmich
 }

@@ -25,6 +25,12 @@
 #' @seealso \code{\linkS4class{Phenotypes}}
 #' @seealso \code{\link{plot.concordance}}
 #' @seealso \code{\link{rbo}}
+#' 
+#' @examples
+#' data(stabilityfits)
+#' conc <- concordance(gsp(stabilityfits$A), gsp(stabilityfits$B), 
+#' gsp(stabilityfits$C), gsp(stabilityfits$D))
+#' plot(conc)
 concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pairwise.complete.obs", rbo.p=0.95, rbo.k=NULL, rbo.mid=NULL) {
   phenotypes <- list(...)
   if(is.list(phenotypes[[1]])) phenotypes <- unlist(phenotypes, recursive = FALSE)
@@ -67,20 +73,23 @@ concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pair
 #' Jaccard index (J) of selected genes.
 #' 
 #' @author Fabian Schmich
+#' @import ggplot2
+#' @import reshape2
 #' @export
 #' @method plot concordance
 #' 
 #' @param x The data of class \code{\link{concordance}}
 #' @param ... Additional parameters for plot
+#' @return Boxplots of concordance measures
 plot.concordance <- function(x, ...) {
-  if (!require(ggplot2) | !require(reshape2)) {
-    warning("You may want to install ggplot2 and reshape2 for prettier plots.")
-    boxplot(x[-1], ...)
-  } else {
+#   if (!require(ggplot2) | !require(reshape2)) {
+#     warning("You may want to install ggplot2 and reshape2 for prettier plots.")
+#     boxplot(x[-1], ...)
+#   } else {
     x <- melt(data.frame(x[1:5]), id.vars=c("test.pair"), variable.name="measure")
     x$measure <- factor(x$measure, levels=c("cor", "rbo.top", "rbo.bottom", "jaccard"))
     pl <- ggplot(data=x, aes_string(x="measure", y="value")) + 
-      geom_boxplot(outlier.size=0, width=0.85, na.rm = T) +
+      geom_boxplot(outlier.size=0, width=0.85, na.rm = TRUE) +
       scale_x_discrete(labels = c(
         cor = "Correlation",
         rbo.top = "RBO (top)",
@@ -101,7 +110,7 @@ plot.concordance <- function(x, ...) {
             strip.background = element_blank(),
             panel.border = element_rect(colour = "black"))
     return(pl)
-  }
+#   }
 }
 
 #' Rank biased overlap (Webber et al., 2010)
@@ -123,6 +132,12 @@ plot.concordance <- function(x, ...) {
 #' @return rank biased overlap (rbo)
 #' 
 #' @seealso \code{\link{concordance}}
+#' 
+#' @examples
+#' a <- rnorm(26)
+#' b <- rnorm(26)
+#' names(a) <- names(b) <- LETTERS
+#' rbo(a, b, p = 0.95)
 rbo <- function(s, t, p, k=floor(max(length(s), length(t))/2), side=c("top", "bottom"), mid=NULL) {
   side <- match.arg(side)
   if (!is.numeric(s) | !is.numeric(t))

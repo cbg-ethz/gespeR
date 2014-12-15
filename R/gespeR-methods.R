@@ -15,6 +15,10 @@
 #' 
 #' @seealso \code{\linkS4class{gespeR}}
 #' @seealso \code{\linkS4class{Phenotypes}}
+#' 
+#' @examples
+#' data(stabilityfits)
+#' scores(stabilityfits$A)
 if (!isGeneric("scores")) {
   setGeneric(name="scores",
            def=function(object, ...) {              
@@ -58,6 +62,14 @@ setMethod(f="scores",
 #' @param targets A \code{\linkS4class{TargetRelations}} object.
 #' @param phenotypes A \code{\linkS4class{Phenotypes}} object.
 #' @return List containing the matched targets and phenotypes
+#' @examples
+#' phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
+#' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+#' phenos <- phenos[1:17]
+#' stripped_down <- join(targets = trels, phenotypes = phenos)
 setGeneric(name="join", 
            def=function(targets, phenotypes) {
              standardGeneric("join")
@@ -72,7 +84,7 @@ setMethod(f="join",
             isect <- intersect(p.siRNAs, t.siRNAs)
             isect <- sort(isect)
             if (length(isect) != length(p.siRNAs) | length(isect) != length(t.siRNAs)) {
-              warning("Phenotype siRNAs and TargetRelations siRNAs do not fully overlap. Stripping to intersection...")
+              message("Phenotype siRNAs and TargetRelations siRNAs do not fully overlap. Stripping to intersection...")
             }
             if (length(isect) == 0) {
               stop("Phenotype siRNAs and TargetRelations siRNAs do not overlap.")
@@ -99,6 +111,11 @@ setMethod(f="join",
 #' @param path The path to write out values
 #' @param ... Additional arguments
 #' @return A \code{\linkS4class{TargetRelations}} object or \code{\linkS4class{gespeR}} object
+#' @examples
+#' data(stabilityfits)
+#' \dontrun{
+#' loadValues(stabilityfits$A)
+#' }
 setGeneric(name="loadValues", 
            def=function(object) {
              standardGeneric("loadValues")
@@ -239,6 +256,12 @@ setMethod(f="writeValues",
 #' @seealso \code{\link{gsp}}
 #' @seealso \code{\link{ssp}}
 #' @seealso \code{\link{scores}}
+#' @examples
+#'  data(stabilityfits)
+#'  gspA <- gsp(stabilityfits$A)
+#' \dontrun{
+#'  annotate.gsp(gspA)
+#' }
 if (!isGeneric("annotate.gsp")) {
   setGeneric(name="annotate.gsp",
              def=function(object, ...) {              
@@ -286,6 +309,10 @@ setMethod(f="annotate.gsp",
 #' @return A \code{\linkS4class{Phenotypes}} object of GSPs and SSPs, respectively
 #' @seealso \code{\link{annotate.gsp}}
 #' @seealso \code{\link{scores}}
+#' @examples
+#' data(stabilityfits)
+#' gsp(stabilityfits$A)
+#' ssp(stabilityfits$B)
 setGeneric(name="gsp", def=function(object) standardGeneric("gsp"))
 
 #' @rdname gspssp-methods

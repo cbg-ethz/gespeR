@@ -18,6 +18,10 @@ A \code{\link{Matrix}} object
 \description{
 Retrieve the numeric siRNA-to-gene target relations from a \code{\linkS4class{TargetRelations}} object
 }
+\examples{
+trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+values(trels)[1:5, 1:5]
+}
 \author{
 Fabian Schmich
 }

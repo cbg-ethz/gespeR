@@ -28,6 +28,12 @@ Evaluates the rank biased overlap (rbo) of two ranked lists based on formula bas
 very similar, wheras low rbo indicates dissimilar lists. rbo ranges between 0 and 1. In this method
 the extrapolated version of rbo is implemented.
 }
+\examples{
+a <- rnorm(26)
+b <- rnorm(26)
+names(a) <- names(b) <- LETTERS
+rbo(a, b, p = 0.95)
+}
 \author{
 Fabian Schmich
 }

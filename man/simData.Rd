@@ -2,13 +2,14 @@
 \docType{data}
 \name{simData}
 \alias{simData}
-\title{Example phenotype and target relations data}
+\title{Example phenotype and target relations data A, B, C, and D}
 \description{
 The data set contains simulated data for four screens. Each screen consists of a phenotype vector
 and target relations between siRNAs and genes, i.e. which siRNA binds which genes (on- and off-targets).
 }
 \examples{
-pheno.a <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package="gespeR"), type = "SSP", col.id = 1, col.score = 2)
+pheno.a <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package="gespeR"),
+type = "SSP", col.id = 1, col.score = 2)
 targets.a <- TargetRelations(system.file("extdata", "TR_screen_A.rds", package="gespeR"))
 }
 

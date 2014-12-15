@@ -22,6 +22,13 @@ data.frame containing gene identifier, gene symbol and phenotypic score
 Query Biomart HGNC symbols for the entrez identifiers of estimated GSPs.
 Currently, only implemented for species "hsapiens".
 }
+\examples{
+data(stabilityfits)
+ gspA <- gsp(stabilityfits$A)
+\dontrun{
+ annotate.gsp(gspA)
+}
+}
 \author{
 Fabian Schmich
 }

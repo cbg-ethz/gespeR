@@ -10,7 +10,6 @@
 #' 
 #' @include TargetRelations-class.R
 #' @include Phenotypes-class.R
-#' @example inst/example/gespeR-example.R
 #' @exportClass gespeR
 #'
 #' @slot SSP The observed siRNA-specific phenotypes
@@ -26,6 +25,23 @@
 #' @seealso \code{\link{scores}}
 #' @seealso \code{\link{stability}}
 #' @seealso \code{\link{target.relations}}
+#' 
+#' @examples
+#' phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
+#' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+#' res <- gespeR(phenotypes = phenos,
+#'     target.relations = trels,
+#'     mode = "stability",
+#'     nbootstrap = 100,
+#'     fraction = 0.67,
+#'     threshold = 0.75,
+#'     EV = 1,
+#'     weakness = 0.8,
+#'     ncores = 1)
+#' gsp(res)
 setClass(Class="gespeR",
          representation=representation(
            SSP="Phenotypes",
@@ -128,6 +144,23 @@ setMethod("gespeR",
 #' @export
 #' @param object A \code{\linkS4class{gespeR}} object  
 #' @return A \code{\linkS4class{Phenotypes}} object of SSPs
+#' @examples
+#' phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
+#' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+#' res <- gespeR(phenotypes = phenos,
+#'  target.relations = trels,
+#'  mode = "stability",
+#'  nbootstrap = 100,
+#'  fraction = 0.67,
+#'  threshold = 0.75,
+#'  EV = 1,
+#'  weakness = 0.8,
+#'  ncores = 1)
+#' stab <- stability(res)
+#' head(sort(stab$frequency, decreasing = TRUE))
 setGeneric(name="stability", def=function(object) standardGeneric("stability"))
 #' @rdname stability-methods
 setMethod(f="stability",
@@ -153,6 +186,7 @@ setMethod(f="stability",
 #' 
 #' @param x A \code{\linkS4class{gespeR}} object
 #' @param ... Additional paramters for plot
+#' @return Histogram of SSPs or GSPs
 plot.gespeR <- function(x, ...) {
   if (x@is.fitted) {
     switch(x@model$type,
@@ -169,12 +203,15 @@ plot.gespeR <- function(x, ...) {
 #' Retrieve siRNA-to-gene target relations from a \code{\linkS4class{gespeR}} object.
 #'
 #' @author Fabian Schmich
-#' @rdname target.relations-methods
+#' @rdname target-relations-methods
 #' @export 
 #' @param object A \code{\linkS4class{gespeR}} object 
-#' @return A \code{\linkS4class{TargetRelations}} object 
+#' @return A \code{\linkS4class{TargetRelations}} object
+#' @examples
+#' data(stabilityfits)
+#' target.relations(stabilityfits$A)
 setGeneric(name="target.relations", def=function(object) standardGeneric("target.relations"))
-#' @rdname target.relations-methods
+#' @rdname target-relations-methods
 setMethod(f="target.relations",
           signature=signature(object="gespeR"),
           function(object) {

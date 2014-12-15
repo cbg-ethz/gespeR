@@ -18,6 +18,13 @@ A \code{\linkS4class{Phenotypes}} object without NA scores values
 \description{
 Remove NA/Inf values from phenotype vectors
 }
+\examples{
+phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+type = "SSP",
+col.id = 1,
+col.score = 2)
+na.rem(phenos)
+}
 \author{
 Fabian Schmich
 }

@@ -21,6 +21,10 @@ A named vector of scores for each phenotype identifier
 \description{
 Return a named vector of phenotype scores
 }
+\examples{
+data(stabilityfits)
+scores(stabilityfits$A)
+}
 \author{
 Fabian Schmich
 }

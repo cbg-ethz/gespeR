@@ -36,7 +36,7 @@ setMethod(f="show",
                             "cv"=data.frame(ID=object@GSP@ids, GSP=object@GSP@values, Stability=NA),
                             "stability"=data.frame(ID=object@GSP@ids, GSP=object@GSP@values, Stability=object@model$stability$frequency[object@model$stability$selection])
               )
-              res <- res[order(abs(res$GSP), decreasing=T),]
+              res <- res[order(abs(res$GSP), decreasing = TRUE),]
               rownames(res) <- NULL
               if (nrow(res) > 5) {
                 print(head(res), 5)

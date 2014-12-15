@@ -10,6 +10,9 @@
 
 \item{...}{Additional arguments for plot}
 }
+\value{
+Histogram of scores
+}
 \description{
 Plot method for Phenotype objects
 }

@@ -31,6 +31,11 @@ A \code{\link{glmnet}} object
 \description{
 Based on Meinshausen and Buehlmann (2009)
 }
+\examples{
+y <- rnorm(50)
+ x <- matrix(runif(50 * 20), ncol = 20)
+ lasso.rand(x = x, y = y)
+}
 \author{
 Fabian Schmich
 }

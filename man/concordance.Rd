@@ -34,6 +34,12 @@ A \code{\link{concordance}} object with the following elements:
 Measures include the correlation (rho) between pairs of phenotypes for the same gene, the rank biased overlap (\code{\link{rbo}})
 of the top and bottom of ranked lists, and the Jaccard index (J) of selected genes.
 }
+\examples{
+data(stabilityfits)
+conc <- concordance(gsp(stabilityfits$A), gsp(stabilityfits$B),
+gsp(stabilityfits$C), gsp(stabilityfits$D))
+plot(conc)
+}
 \author{
 Fabian Schmich
 }

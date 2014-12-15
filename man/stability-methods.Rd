@@ -19,6 +19,24 @@ A \code{\linkS4class{Phenotypes}} object of SSPs
 Retrieve a \code{\linkS4class{Phenotypes}} object with stability values from a
 \code{\linkS4class{gespeR}} object.
 }
+\examples{
+phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+type = "SSP",
+col.id = 1,
+col.score = 2)
+trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+res <- gespeR(phenotypes = phenos,
+ target.relations = trels,
+ mode = "stability",
+ nbootstrap = 100,
+ fraction = 0.67,
+ threshold = 0.75,
+ EV = 1,
+ weakness = 0.8,
+ ncores = 1)
+stab <- stability(res)
+head(sort(stab$frequency, decreasing = TRUE))
+}
 \author{
 Fabian Schmich
 }
