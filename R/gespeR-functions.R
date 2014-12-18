@@ -9,6 +9,8 @@
 #' @param ncores The number of cores for parallel computation
 #' @return A list containing the fitted model and used paramers
 .gespeR.cv <- function(SSP, targets, alpha, ncores=1) {
+  cl <- makeCluster(ncores)
+  registerDoParallel(cl)
   model <- cv.glmnet(x=targets, y=SSP,
                      family="gaussian",
                      alpha=alpha,
@@ -17,7 +19,7 @@
                      intercept=FALSE,
                      keep=TRUE,
                      parallel=ifelse(ncores > 1, TRUE, FALSE))
-  
+  stopCluster(cl)
   out <- list(type=c("cv"),
               fit=model$glmnet.fit,
               coefficients=coef(model, s="lambda.1se")[,1],
