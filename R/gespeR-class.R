@@ -168,7 +168,10 @@ setMethod(f="stability",
           function(object) {
             if (object@is.fitted) {
               if(object@model$type == "stability") {
-                return(object@model$stability)
+                #return(object@model$stability)
+                Phenotypes(phenotypes = object@model$stability$frequency[object@model$stability$selection], 
+                           ids = names(object@model$stability$frequency)[object@model$stability$selection], 
+                           type = "GSP")
               } else {
                 warning("gespeR model not fitted in mode=stability")
               }
