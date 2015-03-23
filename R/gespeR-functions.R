@@ -62,7 +62,7 @@
                                standardize=FALSE
                               )
   out <- list(type=c("stability"),
-              fit=stab.out$model,
+#              fit=stab.out$model, # saving space
               coefficients=stab.out$model$coefficients,
               cv=list(),
               stability=c(stab.out[c("frequency", "selection")], EV=EV, threshold=threshold, q=q, nbootstrap=nbootstrap)

@@ -132,6 +132,61 @@ setMethod(f="na.rem",
           }
 )
 
+#' Concatenate Phenotypes objects
+#' 
+#' @author Fabian Schmich
+#' @export
+#' 
+#' @param x A \code{\linkS4class{Phenotypes}} object
+#' @param recursive recursive
+#' @param ... additional \code{\linkS4class{Phenotypes}} objects
+#' @return A concatenated \code{\linkS4class{Phenotypes}} object
+#' @examples
+#' phenos.a <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
+#' phenos.b <- Phenotypes(system.file("extdata", "Phenotypes_screen_B.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
+#' c(phenos.a, phenos.b)
+setMethod("c", 
+          signature(x = "Phenotypes"), 
+          function(x, ...) {
+            elements = list(x, ...)
+            t <- unique(sapply(elements, function(x) x@type))
+            if (length(t) == 1) {
+              vals <- do.call("c", lapply(elements, function(x) x@values))
+              ids <- do.call("c", lapply(elements, function(x) x@ids))
+              Phenotypes(phenotypes = vals, ids = ids, type = t)
+            } else {
+              stop("Unequal types")
+            }
+          }
+)
+
+#' Convert Phenotypes object to a data.frame
+#' 
+#' @author Fabian Schmich
+#' 
+#' @export
+#' 
+#' @param x A \code{\linkS4class{Phenotypes}} object
+#' @return A data.frame
+#' @examples
+#' phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
+#' as.data.frame(phenos)
+setMethod("as.data.frame", 
+          signature(x = "Phenotypes"), 
+          function(x) {
+            data.frame(ID = x@ids, Value = x@values)
+          }
+)
+
 #' Plot method for Phenotype objects
 #' 
 #' @return NULL

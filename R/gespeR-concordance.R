@@ -11,10 +11,10 @@
 #' @param ... The phenotypes to be evaluated for concordance
 #' @param min.overlap The minimum number of overlapping genes required
 #' @param cor.method A character string indicating which correlation coefficient is to be computed
-#' @param cor.use A character string indicating a method for computing correlation in the presence of missing values
 #' @param rbo.p The weighting parameter for rank biased overlap (rbo) in [0, 1]. High p implies strong emphasis on top ranked elements
 #' @param rbo.k The evaluation depth for rank biased overlap extrapolation
 #' @param rbo.mid The mid point to split a ranked list, e.g. in order to split positive and negative scores choose mid=0
+#' @param uneven.lengths Indicator if lists have uneven lengths
 #' @return A \code{\link{concordance}} object with the following elements:
 #' \item{pair.test}{Indicator of compared phenotypes}
 #' \item{cor}{The correlation between pairs of phenotypes for the same gene}
@@ -31,7 +31,7 @@
 #' conc <- concordance(gsp(stabilityfits$A), gsp(stabilityfits$B), 
 #' gsp(stabilityfits$C), gsp(stabilityfits$D))
 #' plot(conc)
-concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pairwise.complete.obs", rbo.p=0.95, rbo.k=NULL, rbo.mid=NULL) {
+concordance <- function(..., min.overlap=1, cor.method="spearman", rbo.p=0.98, rbo.k=NULL, rbo.mid=NULL, uneven.lengths = TRUE) {
   phenotypes <- list(...)
   if(is.list(phenotypes[[1]])) phenotypes <- unlist(phenotypes, recursive = FALSE)
   if(any(sapply(phenotypes, is, class2="Phenotypes")) == FALSE) {
@@ -40,20 +40,26 @@ concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pair
   # Find all pairs of phenotypes
   pairs <- expand.grid(1:length(phenotypes), 1:length(phenotypes))
   pairs <- pairs[which(pairs[,1] < pairs[,2]),]
-  cors <- rbo.top <- rbo.bottom <- jaccard <- vector(length=nrow(pairs))
+  cors <- rbo.top <- rbo.bottom <- jaccard <-  lisect <- vector(length=nrow(pairs))
   for (r in 1:nrow(pairs)) {
     p1 <- scores(phenotypes[[pairs[r,1]]])
     p2 <- scores(phenotypes[[pairs[r,2]]])
-    if (length(intersect(names(p1), names(p2))) < min.overlap) {
+    lisect[r] <- length(intersect(names(p1), names(p2)))
+    if (lisect[r] < min.overlap) {
       warning(sprintf("Minimal overlap not met by pair %d - %d.", pairs[r,1], pairs[r,2]))
       cors[r] <- rbo.top[r] <- rbo.bottom[r] <- jaccard[r] <- NA
     } else {
       uids <- unique(names(p1), names(p2))
       p1 <- p1[match(uids, names(p1))]
       p2 <- p2[match(uids, names(p2))]
-      cors[r] <- cor(x=p1, y=p2, use=cor.use, method=cor.method)
-      rbo.top[r] <- rbo(s=p1, t=p2, side="top", p=rbo.p, mid=rbo.mid)
-      rbo.bottom[r] <- rbo(s=p1, t=p2, side="bottom", p=rbo.p, mid=rbo.mid)
+#       if (cor.test(x = p1, y = p2, method = cor.method, use = "pairwise.complete.obs")$p.value < 0.05) {
+        cors[r] <- cor(x=p1, y=p2, method = cor.method, use = "pairwise.complete.obs")
+#       } else {
+#         cors[r] <- NA
+#         warning("No significant correlation between between pari %d - %d", pairs[r,1], pairs[r,2])
+#       }
+      rbo.top[r] <- rbo(s=p1, t=p2, side="top", p=rbo.p, mid=rbo.mid, uneven.lengths = uneven.lengths)
+      rbo.bottom[r] <- rbo(s=p1, t=p2, side="bottom", p=rbo.p, mid=rbo.mid, uneven.lengths = uneven.lengths)
       jaccard[r] <- .jaccard(names(p1), names(p2))    
     }
   }
@@ -61,9 +67,27 @@ concordance <- function(..., min.overlap=1, cor.method="spearman", cor.use="pair
                     cor=cors,
                     rbo.top=rbo.top,
                     rbo.bottom=rbo.bottom,
-                    jaccard=jaccard)
+                    jaccard=jaccard,
+                    lisect=lisect)
   class(res) <- "concordance"
   return(res)
+}
+
+#' Coerce method
+#' 
+#' @author Fabian Schmich
+#' @method as.data.frame concordance
+#' @export
+#' @param x concordance object
+#' @param ... additional arguments
+#' @return data.frame
+as.data.frame.concordance <- function(x, ...) {
+  data.frame(test.pair = x$test.pair,
+             cor = x$cor,
+             rbo.top = x$rbo.top,
+             rbo.bottom = x$rbo.bottom,
+             jaccard = x$jaccard,
+             lisect = x$lisect)
 }
 
 #' Plot concordance 
@@ -129,6 +153,7 @@ plot.concordance <- function(x, ...) {
 #' @param k Evaluation depth for extrapolation
 #' @param side Evaluate similarity between the top or the bottom of the ranked lists
 #' @param mid Set the mid point to for example only consider positive or negative scores
+#' @param uneven.lengths Indicator if lists have uneven lengths
 #' @return rank biased overlap (rbo)
 #' 
 #' @seealso \code{\link{concordance}}
@@ -138,7 +163,7 @@ plot.concordance <- function(x, ...) {
 #' b <- rnorm(26)
 #' names(a) <- names(b) <- LETTERS
 #' rbo(a, b, p = 0.95)
-rbo <- function(s, t, p, k=floor(max(length(s), length(t))/2), side=c("top", "bottom"), mid=NULL) {
+rbo <- function(s, t, p, k=floor(max(length(s), length(t))/2), side=c("top", "bottom"), mid=NULL, uneven.lengths = TRUE) {
   side <- match.arg(side)
   if (!is.numeric(s) | !is.numeric(t))
     stop("Input vectors are not numeric.")
@@ -148,7 +173,7 @@ rbo <- function(s, t, p, k=floor(max(length(s), length(t))/2), side=c("top", "bo
                 "top"=list(s=.select.ids(s, "top", mid), t=.select.ids(t, "top", mid)),
                 "bottom"=list(s=.select.ids(s, "bottom", mid), t=.select.ids(t, "bottom", mid))
   )
-  min(1, .rbo.ext.unequal.length(ids$s, ids$t, p, k))
+  min(1, .rbo.ext(ids$s, ids$t, p, k, uneven.lengths = uneven.lengths))
 }
 
 #' Select top or bottom names of ranked vector
@@ -186,8 +211,9 @@ rbo <- function(s, t, p, k=floor(max(length(s), length(t))/2), side=c("top", "bo
 #' @param y List 2
 #' @param p The weighting parameter in [0, 1]. High p implies strong emphasis on top ranked elements
 #' @param k The evaluation depth
+#' @param uneven.lengths Indicator if lists have uneven lengths
 #' @return The rank biased overlap between x and y
-.rbo.ext.unequal.length <- function(x, y, p, k) {
+.rbo.ext <- function(x, y, p, k, uneven.lengths = TRUE) {
   if (length(x) <= length(y)) {
     S <- x
     L <- y
@@ -198,11 +224,19 @@ rbo <- function(s, t, p, k=floor(max(length(s), length(t))/2), side=c("top", "bo
   l <- min(k, length(L))
   s <- min(k, length(S))
   
-  Xd <- sapply(1:l, function(i) length(intersect(S[1:i], L[1:i])))
-  ((1-p) / p) *
-    ((sum(Xd / seq(1, l) * p^seq(1, l))) +
-       (sum(Xd[s] * (seq(s+1, l) - s) / (s * seq(s+1, l)) * p^seq(s+1, l)))) +
-    ((Xd[l] - Xd[s]) / l + (Xd[s] / s)) * p^l 
+  if (uneven.lengths) {
+    Xd <- sapply(1:l, function(i) length(intersect(S[1:i], L[1:i])))
+    ((1-p) / p) *
+      ((sum(Xd[seq(1, l)] / seq(1, l) * p^seq(1, l))) +
+         (sum(Xd[s] * (seq(s+1, l) - s) / (s * seq(s+1, l)) * p^seq(s+1, l)))) +
+      ((Xd[l] - Xd[s]) / l + (Xd[s] / s)) * p^l  
+  } else {
+    #stopifnot(l == s)
+    k <- min(s, k)
+    Xd <- sapply(1:k, function(i) length(intersect(x[1:i], y[1:i])))
+    Xk <- Xd[k]
+    (Xk / k) * p^k + (((1-p)/p) * sum((Xd / seq(1,k)) * p^seq(1,k)))
+  }
 }
 
 #' Jaccard index between two sets
