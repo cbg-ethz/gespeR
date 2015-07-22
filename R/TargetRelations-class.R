@@ -24,13 +24,13 @@
 #' 
 #' @examples
 #' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
-setClass(Class="TargetRelations",
-         representation=representation(
-           siRNAs="character",
-           genes="character",
-           path="character",
-           is.loaded="logical",
-           values="Matrix"
+setClass(Class = "TargetRelations",
+         representation = representation(
+           siRNAs = "character",
+           genes = "character",
+           path = "character",
+           is.loaded = "logical",
+           values = "Matrix"
          ),
          validity=function(object) {
            if (object@is.loaded) {
@@ -53,36 +53,36 @@ setClass(Class="TargetRelations",
 #' 
 #' @param targets Path to a .rds target relations matrix file or \code{\link{Matrix}} object
 #' @return A \code{\linkS4class{TargetRelations}} object 
-setGeneric(name="TargetRelations", 
-           def=function(targets) { 
+setGeneric(name = "TargetRelations", 
+           def = function(targets) { 
              standardGeneric("TargetRelations")
            })
 
 #' @rdname TargetRelations-class
-setMethod(f="TargetRelations",
-          signature=signature(targets="character"),
+setMethod(f = "TargetRelations",
+          signature = signature(targets = "character"),
           function(targets) {
             mat <- readRDS(targets)
             new("TargetRelations",
-                path=targets,
-                siRNAs=rownames(mat),
-                values=mat,
-                genes=colnames(mat),
-                is.loaded=TRUE
+                path = targets,
+                siRNAs = rownames(mat),
+                values = mat,
+                genes = colnames(mat),
+                is.loaded = TRUE
             )  
           }
 )
 
 #' @rdname TargetRelations-class
-setMethod(f="TargetRelations",
-          signature=signature(targets="Matrix"),
+setMethod(f = "TargetRelations",
+          signature = signature(targets="Matrix"),
           function(targets) {
             new("TargetRelations",
-                path="",
-                siRNAs=rownames(targets),
-                values=targets,
-                genes=colnames(targets),
-                is.loaded=TRUE
+                path = "",
+                siRNAs = rownames(targets),
+                values = targets,
+                genes = colnames(targets),
+                is.loaded = TRUE
             )  
           }
 )
@@ -101,38 +101,16 @@ setMethod(f="TargetRelations",
 #' @examples
 #' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
 #' path(trels) <- "/dev/null"
-setGeneric(name="path<-", 
-           def=function(object, value) {
+setGeneric(name = "path<-", 
+           def = function(object, value) {
              standardGeneric("path<-")
            })
 
 #' @rdname path-methods
 setMethod(f="path<-",
-          signature=signature(object="TargetRelations", value="character"),
+          signature = signature(object="TargetRelations", value="character"),
           function(object, value) {
             object@path <- value
             return(object)
-          }
-)
-
-#' values
-#' 
-#' Retrieve the numeric siRNA-to-gene target relations from a \code{\linkS4class{TargetRelations}} object
-#'
-#' @author Fabian Schmich
-#' @rdname values-methods
-#' @export
-#' @param object A \code{\linkS4class{TargetRelations}} object
-#' @return A \code{\link{Matrix}} object
-setGeneric(name="values", def=function(object) standardGeneric("values"))
-#' @rdname values-methods
-#' @examples
-#' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
-#' values(trels)[1:5, 1:5]
-setMethod(f="values",
-          signature=signature(object="TargetRelations"),
-          function(object) {
-            if (!object@is.loaded) object <- loadValues(object)
-            return(object@values)
           }
 )

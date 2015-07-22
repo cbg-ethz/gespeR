@@ -31,44 +31,55 @@
 #' conc <- concordance(gsp(stabilityfits$A), gsp(stabilityfits$B), 
 #' gsp(stabilityfits$C), gsp(stabilityfits$D))
 #' plot(conc)
-concordance <- function(..., min.overlap=1, cor.method="spearman", rbo.p=0.98, rbo.k=NULL, rbo.mid=NULL, uneven.lengths = TRUE) {
+concordance <- function(..., min.overlap = 10, cor.method = "spearman", rbo.p = 0.98, rbo.k = NULL, rbo.mid = 0, uneven.lengths = TRUE) {
   phenotypes <- list(...)
   if(is.list(phenotypes[[1]])) phenotypes <- unlist(phenotypes, recursive = FALSE)
-  if(any(sapply(phenotypes, is, class2="Phenotypes")) == FALSE) {
-    stop("Not all elements for comparison are Phenotype objects.")
+  if(any(sapply(phenotypes, is, class2 = "Phenotypes")) == FALSE) {
+    stop("Not all elements for comparison are Phenotype objects")
+  }
+  nphens <- unique(sapply(phenotypes, function(x) dim(x)[2]))
+  if(length(nphens) != 1) {
+    stop("Phenotypes do not have same dimensions")
   }
   # Find all pairs of phenotypes
   pairs <- expand.grid(1:length(phenotypes), 1:length(phenotypes))
   pairs <- pairs[which(pairs[,1] < pairs[,2]),]
-  cors <- rbo.top <- rbo.bottom <- jaccard <-  lisect <- vector(length=nrow(pairs))
-  for (r in 1:nrow(pairs)) {
-    p1 <- scores(phenotypes[[pairs[r,1]]])
-    p2 <- scores(phenotypes[[pairs[r,2]]])
-    lisect[r] <- length(intersect(names(p1), names(p2)))
-    if (lisect[r] < min.overlap) {
-      warning(sprintf("Minimal overlap not met by pair %d - %d.", pairs[r,1], pairs[r,2]))
-      cors[r] <- rbo.top[r] <- rbo.bottom[r] <- jaccard[r] <- NA
-    } else {
-      uids <- unique(names(p1), names(p2))
-      p1 <- p1[match(uids, names(p1))]
-      p2 <- p2[match(uids, names(p2))]
-#       if (cor.test(x = p1, y = p2, method = cor.method, use = "pairwise.complete.obs")$p.value < 0.05) {
-        cors[r] <- cor(x=p1, y=p2, method = cor.method, use = "pairwise.complete.obs")
-#       } else {
-#         cors[r] <- NA
-#         warning("No significant correlation between between pari %d - %d", pairs[r,1], pairs[r,2])
-#       }
-      rbo.top[r] <- rbo(s=p1, t=p2, side="top", p=rbo.p, mid=rbo.mid, uneven.lengths = uneven.lengths)
-      rbo.bottom[r] <- rbo(s=p1, t=p2, side="bottom", p=rbo.p, mid=rbo.mid, uneven.lengths = uneven.lengths)
-      jaccard[r] <- .jaccard(names(p1), names(p2))    
-    }
+  cors <- rbo.top <- rbo.bottom <- jaccard <-  lisect <- vector(length = nrow(pairs) * nphens)
+  for (i in 0:(nphens-1)) {
+    for (r in 1:nrow(pairs)) {
+      p1 <- scores(phenotypes[[pairs[r,1]]])
+      p2 <- scores(phenotypes[[pairs[r,2]]])
+      names.p1 <- as.character(p1[which(!is.na(p1[,2+i])),][["ID"]])
+      names.p2 <- as.character(p2[which(!is.na(p2[,2+i])),][["ID"]])
+      lisect[r+i*nrow(pairs)] <- length(intersect(names.p1, names.p2))
+      if (lisect[r+i*nrow(pairs)] < min.overlap) {
+        warning(sprintf("Minimal overlap not met by pair %d - %d.", pairs[r,1], pairs[r,2]))
+        cors[r+i*nrow(pairs)] <- rbo.top[r+i*nrow(pairs)] <- rbo.bottom[r+i*nrow(pairs)] <- jaccard[r+i*nrow(pairs)] <- NA
+      } else {
+        uids <- unique(names.p1, names.p2)
+        p1 <- p1[match(uids, p1$ID),][[2+i]]
+        p2 <- p2[match(uids, p2$ID),][[2+i]]
+        names(p1) <- uids
+        names(p2) <- uids
+        #       if (cor.test(x = p1, y = p2, method = cor.method, use = "pairwise.complete.obs")$p.value < 0.05) {
+        cors[r+i*nrow(pairs)] <- cor(x = p1, y = p2, method = cor.method, use = "pairwise.complete.obs")
+        #       } else {
+        #         cors[r] <- NA
+        #         warning("No significant correlation between between pari %d - %d", pairs[r,1], pairs[r,2])
+        #       }
+        rbo.top[r+i*nrow(pairs)] <- rbo(s = p1, t = p2, side = "top", p = rbo.p, mid = rbo.mid, uneven.lengths = uneven.lengths)
+        rbo.bottom[r+i*nrow(pairs)] <- rbo(s = p1, t = p2, side = "bottom", p = rbo.p, mid = rbo.mid, uneven.lengths = uneven.lengths)
+        jaccard[r+i*nrow(pairs)] <- .jaccard(names.p1, names.p2)
+      }
+    } 
   }
-  res <- data.frame(test.pair=paste(pairs[,1], pairs[,2], sep="-"),
-                    cor=cors,
-                    rbo.top=rbo.top,
-                    rbo.bottom=rbo.bottom,
-                    jaccard=jaccard,
-                    lisect=lisect)
+  res <- data.frame(test.pair = paste(pairs[,1], pairs[,2], sep="-"),
+                    phen = sort(rep(1:nphens, nrow(pairs))),
+                    cor = cors,
+                    rbo.top = rbo.top,
+                    rbo.bottom = rbo.bottom,
+                    jaccard = jaccard,
+                    lisect = lisect)
   class(res) <- "concordance"
   return(res)
 }
@@ -83,6 +94,7 @@ concordance <- function(..., min.overlap=1, cor.method="spearman", rbo.p=0.98, r
 #' @return data.frame
 as.data.frame.concordance <- function(x, ...) {
   data.frame(test.pair = x$test.pair,
+             phen = x$phen,
              cor = x$cor,
              rbo.top = x$rbo.top,
              rbo.bottom = x$rbo.bottom,
@@ -110,7 +122,7 @@ plot.concordance <- function(x, ...) {
 #     warning("You may want to install ggplot2 and reshape2 for prettier plots.")
 #     boxplot(x[-1], ...)
 #   } else {
-    x <- melt(data.frame(x[1:5]), id.vars=c("test.pair"), variable.name="measure")
+    x <- melt(data.frame(x[1:6]), id.vars=c("test.pair", "phen"), variable.name = "measure")
     x$measure <- factor(x$measure, levels=c("cor", "rbo.top", "rbo.bottom", "jaccard"))
     pl <- ggplot(data=x, aes_string(x="measure", y="value")) + 
       geom_boxplot(outlier.size=0, width=0.85, na.rm = TRUE) +

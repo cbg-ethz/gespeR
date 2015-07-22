@@ -28,23 +28,21 @@ if (!isGeneric("scores")) {
 }
 
 #' @rdname scores-methods
-setMethod(f="scores",
-          signature=signature(object="Phenotypes"),
-          definition=function(object) {
-            r <- object@values
-            names(r) <- object@ids
-            return(r)
+setMethod(f = "scores",
+          signature = signature(object = "Phenotypes"),
+          definition = function(object) {
+            object %>% as.data.frame() %>% tbl_df()
           }
 )
 
 #' @rdname scores-methods
 setMethod(f="scores",
-          signature=signature(object="gespeR"),
-          definition=function(object, type=c("GSP", "SSP")) {
+          signature=signature(object = "gespeR"),
+          definition = function(object, type = c("GSP", "SSP")) {
             type <- match.arg(type)
             phen <- switch(type,
-                           "GSP"=object@GSP,
-                           "SSP"=object@SSP
+                           "GSP" = object@GSP,
+                           "SSP" = object@SSP
             )
             return(scores(phen))
           }
@@ -70,15 +68,15 @@ setMethod(f="scores",
 #' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
 #' phenos <- phenos[1:17]
 #' stripped_down <- join(targets = trels, phenotypes = phenos)
-setGeneric(name="join", 
-           def=function(targets, phenotypes) {
+setGeneric(name = "join", 
+           def = function(targets, phenotypes) {
              standardGeneric("join")
            })
 
 #' @rdname join-methods
-setMethod(f="join",
-          signature=c(targets="TargetRelations", phenotypes="Phenotypes"),
-          def=function(targets, phenotypes) {
+setMethod(f = "join",
+          signature = c(targets = "TargetRelations", phenotypes = "Phenotypes"),
+          def = function(targets, phenotypes) {
             p.siRNAs <- phenotypes@ids
             t.siRNAs <- targets@siRNAs
             isect <- intersect(p.siRNAs, t.siRNAs)
@@ -91,7 +89,7 @@ setMethod(f="join",
             }
             phenotypes <- phenotypes[match(isect, p.siRNAs)]
             targets <- targets[match(isect, t.siRNAs),]
-            return(list(phenotypes=phenotypes, targets=targets))
+            return(list(phenotypes = phenotypes, targets = targets))
           }
 )
 
@@ -263,38 +261,43 @@ setMethod(f="writeValues",
 #'  annotate.gsp(gspA)
 #' }
 if (!isGeneric("annotate.gsp")) {
-  setGeneric(name="annotate.gsp",
-             def=function(object, ...) {              
+  setGeneric(name = "annotate.gsp",
+             def = function(object, ...) {              
                standardGeneric("annotate.gsp")
              },
-             package="gespeR")
+             package = "gespeR")
 }
 
 #' @rdname annotate.gsp-methods
-setMethod(f="annotate.gsp",
-          signature=c(object="Phenotypes"),
-          def=function(object, organism="hsapiens") {
+setMethod(f = "annotate.gsp",
+          signature = c(object="Phenotypes"),
+          def = function(object, organism = "hsapiens") {
             if (length(organism) > 1) organism <- organism[1]
             if (object@type != "GSP") stop("Annotation only for GSP phenotypes available.")
             # Set up biomaRt
             mart <- useMart("ensembl")
-            ensembl <- useDataset(dataset=paste(organism, "gene", "ensembl", sep="_"), mart=mart, verbose=FALSE)
+            ensembl <- useDataset(dataset = paste(organism, "gene", "ensembl", sep = "_"),
+                                  mart = mart, 
+                                  verbose  =FALSE)
             # Retrieve results
-            result <- data.frame(GeneID=object@ids, Score=object@values)
+            result <- as.data.frame(object)
             result$GeneID <- gsub("ENTREZ", replacement="", result$GeneID, ignore.case=TRUE)
-            symbols <- getBM(attributes=c("entrezgene", "hgnc_symbol"), filters="entrezgene", values=result$GeneID, mart=ensembl)
+            symbols <- getBM(attributes = c("entrezgene", "hgnc_symbol"), 
+                             filters = "entrezgene", 
+                             values = result$ID, 
+                             mart = ensembl)
             if (nrow(symbols) == 0) stop("No annotation found for IDs.")
             # Prepare output
-            result <- merge(result, symbols, by.x="GeneID", by.y="entrezgene", all.x=TRUE)
-            return(data.frame(GeneID=result$GeneID, GeneSymbol=result$hgnc_symbol, Score=result$Score))
+            result <- merge(result, symbols, by.x = "ID", by.y = "entrezgene", all.x = TRUE)
+            return(data.frame(GeneID = result$GeneID, GeneSymbol = result$hgnc_symbol, Score = result$Score))
           }
 )
 
 #' @rdname annotate.gsp-methods
-setMethod(f="annotate.gsp",
-          signature=c(object="gespeR"),
-          def=function(object, organism="hsapiens") {
-            if (!object@is.fitted) stop("Fit model first.")
+setMethod(f = "annotate.gsp",
+          signature=c(object = "gespeR"),
+          def=function(object, organism = "hsapiens") {
+            if (!object@is.fitted) stop("Fit model first")
             return(annotate.gsp(object@GSP, organism))
           }
 )
@@ -313,23 +316,54 @@ setMethod(f="annotate.gsp",
 #' data(stabilityfits)
 #' gsp(stabilityfits$A)
 #' ssp(stabilityfits$B)
-setGeneric(name="gsp", def=function(object) standardGeneric("gsp"))
+setGeneric(name = "gsp", def = function(object) standardGeneric("gsp"))
 
 #' @rdname gspssp-methods
-setMethod(f="gsp",
-          signature=signature(object="gespeR"),
+setMethod(f = "gsp",
+          signature = signature(object = "gespeR"),
           function(object) object@GSP
          )
-
 
 
 #' @rdname gspssp-methods
 #' @inheritParams gsp
 #' @export
-setGeneric(name="ssp", def=function(object) standardGeneric("ssp"))
+setGeneric(name = "ssp", def = function(object) standardGeneric("ssp"))
 
 #' @rdname gspssp-methods
-setMethod(f="ssp",
-          signature=signature(object="gespeR"),
+setMethod(f = "ssp",
+          signature = signature(object = "gespeR"),
           function(object) object@SSP
+)
+
+
+
+#' values
+#' 
+#' Retrieve the numeric values from a \code{\linkS4class{TargetRelations}} 
+#' or \code{\linkS4class{Phenotypes}} object
+#'
+#' @author Fabian Schmich
+#' @rdname values-methods
+#' @export
+#' @param object A \code{\linkS4class{TargetRelations}} 
+#' or \code{\linkS4class{Phenotypes}} object
+#' @return A \code{\link{Matrix}} object
+setGeneric(name = "values", def=function(object) standardGeneric("values"))
+#' @rdname values-methods
+#' @examples
+#' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
+#' values(trels)[1:5, 1:5]
+setMethod(f = "values",
+          signature = signature(object = "TargetRelations"),
+          function(object) {
+            if (!object@is.loaded) object <- loadValues(object)
+            return(object@values)
+          }
+)
+setMethod(f = "values",
+          signature = signature(object = "Phenotypes"),
+          function(object) {
+            return(object@values)
+          }
 )

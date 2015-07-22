@@ -8,7 +8,8 @@ Imports:
     doParallel,
     parallel,
     foreach,
-    reshape2
+    reshape2,
+    dplyr
 Depends:
     methods,
     graphics,

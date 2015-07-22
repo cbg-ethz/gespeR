@@ -10,9 +10,9 @@
 \arguments{
 \item{x}{A \code{\linkS4class{Phenotypes}} object}
 
-\item{i}{The subsetting indices}
+\item{i}{The subsetting indices for siRNAs}
 
-\item{j}{Subsetting indices (not used)}
+\item{j}{Subsetting indices for multivariate phenotypes}
 
 \item{...}{Additional parameters}
 

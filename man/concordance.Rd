@@ -4,8 +4,8 @@
 \alias{concordance}
 \title{Evaluate the concordance between Phenotype objects}
 \usage{
-concordance(..., min.overlap = 1, cor.method = "spearman", rbo.p = 0.98,
-  rbo.k = NULL, rbo.mid = NULL, uneven.lengths = TRUE)
+concordance(..., min.overlap = 10, cor.method = "spearman", rbo.p = 0.98,
+  rbo.k = NULL, rbo.mid = 0, uneven.lengths = TRUE)
 }
 \arguments{
 \item{...}{The phenotypes to be evaluated for concordance}

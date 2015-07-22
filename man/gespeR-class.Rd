@@ -18,7 +18,9 @@ gespeR(phenotypes, target.relations, ...)
 \S4method{gespeR}{numeric,Matrix}(phenotypes, target.relations, ...)
 }
 \arguments{
-\item{phenotypes}{The siRNA-spefic phenotypes}
+\item{phenotypes}{The siRNA-spefic phenotypes. Single object for univariate
+phenotypes and list of \code{\link{Phenotypes}} objects for multivariate
+phenotypes.}
 
 \item{target.relations}{The siRNA-to-gene target relations}
 

@@ -13,7 +13,7 @@
 #' @docType package
 #' @keywords package
 #' @references Fabian Schmich et. al, Deconvoluting Off-Target Confounded RNA Interference Screens (2014).
-#' @import methods Matrix glmnet
+#' @import methods Matrix glmnet dplyr
 #' @importFrom graphics plot
 #' @seealso \code{\link{gespeR}}
 NA

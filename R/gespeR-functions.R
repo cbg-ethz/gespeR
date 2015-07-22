@@ -1,30 +1,59 @@
+#' Bind multiple phenotypes to matrix
+#' 
+#' @author Fabian Schmich
+#' @noRd
+#' 
+#' @param phenotypes list of phenotypes
+#' @return binding of phenotypes (matrix)
+.bindphens <- function(phenotypes) {
+  if (length(unique(sapply(phenotypes, length))) == 1) {
+    do.call("cBind", phenotypes)
+  } else {
+      warning("Cannot bind phenotypes. Unequal length.")
+      return(phenotypes)
+  }
+}
+
 #' gespeR cross validation
 #' 
 #' @author Fabian Schmich
 #' @noRd
 #' 
-#' @param SSP The siRNA-specific phenotypes
+#' @param SSP The siRNA-specific phenotypes. Single vector for univariate, list of
+#' vectors for multivariate phenotypes.
 #' @param targets The siRNA-to-gene target relations
 #' @param alpha The \code{\link{glmnet}} mixing parameter
 #' @param ncores The number of cores for parallel computation
 #' @return A list containing the fitted model and used paramers
-.gespeR.cv <- function(SSP, targets, alpha, ncores=1) {
+.gespeR.cv <- function(SSP, targets, alpha, ncores = 1) {
+  multivar <- ifelse(ncol(SSP) > 1, TRUE, FALSE)
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
-  model <- cv.glmnet(x=targets, y=SSP,
-                     family="gaussian",
-                     alpha=alpha,
-                     type.measure="mse",
-                     standardize=FALSE,
-                     intercept=FALSE,
-                     keep=TRUE,
-                     parallel=ifelse(ncores > 1, TRUE, FALSE))
+  model <- cv.glmnet(x = targets,
+                     y = as.matrix(SSP),
+                     family = ifelse(multivar, "mgaussian", "gaussian"),
+                     alpha = alpha,
+                     type.measure = "mse",
+                     standardize = FALSE,
+                     intercept = FALSE,
+                     keep = TRUE,
+                     parallel = ifelse(ncores > 1, TRUE, FALSE))  
   stopCluster(cl)
-  out <- list(type=c("cv"),
-              fit=model$glmnet.fit,
-              coefficients=coef(model, s="lambda.1se")[,1],
-              cv=list(name=model$name, nzero=model$nzero, cvm=model$cvm, cvsd=model$cvsd, cvup=model$cvup, cvlo=model$cvlo, foldid=model$foldid, alpha=alpha),
-              stability=list()
+  if (multivar) coefficients <- do.call("cBind", coef(model, s = "lambda.1se")) else 
+    coefficients <- coef(model, s = "lambda.1se")
+  out <- list(type = c("cv"),
+              multivar = multivar,
+              fit = model$glmnet.fit,
+              coefficients = coefficients,
+              cv = list(name = model$name,
+                      nzero = model$nzero, 
+                      cvm = model$cvm, 
+                      cvsd = model$cvsd, 
+                      cvup = model$cvup, 
+                      cvlo = model$cvlo, 
+                      foldid = model$foldid, 
+                      alpha = alpha),
+              stability = list()
   )
   return(out)
 }
@@ -43,29 +72,30 @@
 #' @param weakness The weakness parameter for randomised lasso
 #' @param ncores The number of cores for parallel computation
 #' @return A list containing the fitted model and used paramers
-.gespeR.stability <- function(SSP, targets,
-                              nbootstrap=100,
-                              fraction=0.5, 
-                              threshold=0.75, 
-                              EV=1, 
-                              weakness=1,
-                              ncores=1) {
-  stab.out <- stability.selection(x=targets, y=SSP,
-                               fraction=fraction, 
-                               threshold=threshold, 
-                               EV=EV, 
-                               nbootstrap=nbootstrap,
-                               weakness=weakness,
-                               ncores=ncores,
-                               intercept=FALSE,
-                               family="gaussian",
-                               standardize=FALSE
-                              )
-  out <- list(type=c("stability"),
+.gespeR.stability <- function(SSP, 
+                              targets,
+                              nbootstrap = 100,
+                              fraction = 0.5, 
+                              threshold = 0.75, 
+                              EV = 1, 
+                              weakness = 1,
+                              ncores = 1) {
+  stab.out <- stability.selection(x = targets, 
+                                  y = SSP,
+                                  fraction = fraction, 
+                                  threshold = threshold, 
+                                  EV = EV, 
+                                  nbootstrap = nbootstrap,
+                                  weakness = weakness,
+                                  ncores = ncores,
+                                  intercept = FALSE,
+                                  standardize = FALSE)
+  out <- list(type = c("stability"),
+              multivar = FALSE,
 #              fit=stab.out$model, # saving space
-              coefficients=stab.out$model$coefficients,
-              cv=list(),
-              stability=c(stab.out[c("frequency", "selection")], EV=EV, threshold=threshold, q=q, nbootstrap=nbootstrap)
+              coefficients = stab.out$model$coefficients,
+              cv = list(),
+              stability = c(stab.out[c("frequency", "selection")], EV = EV, threshold = threshold, q = q, nbootstrap = nbootstrap)
   )
   return(out)
 }
@@ -91,21 +121,27 @@
 #'  y <- rnorm(50)
 #'  x <- matrix(runif(50 * 20), ncol = 20)
 #'  lasso.rand(x = x, y = y)
-lasso.rand <- function(x, y,
-                       weakness=1,
-                       subsample=1:nrow(x),
-                       dfmax=(ncol(x)+1),
-                       lambda=NULL,
-                       standardize=FALSE,
-                       intercept=FALSE,
+lasso.rand <- function(x, 
+                       y,
+                       weakness = 1,
+                       subsample = 1:nrow(x),
+                       dfmax = (ncol(x)+1),
+                       lambda = NULL,
+                       standardize = FALSE,
+                       intercept = FALSE,
                        ...) {
+  if (ncol(y) > 1) {
+    stop("Randomised lasso not yet implemented for multivariate phenotypes")
+  }
   if (is.null(dim(y))) y <- cbind(y)  
-  glmnet(x[subsample,], y[subsample,],
-         lambda=lambda,
-         penalty.factor=(1 / runif(ncol(x), weakness, 1)),
-         alpha=1,
-         dfmax=dfmax,
-         standardize=FALSE,
+  glmnet(x[subsample,], 
+         y[subsample,],
+         family = "gaussian",
+         lambda = lambda,
+         penalty.factor = (1 / runif(ncol(x), weakness, 1)),
+         alpha = 1,
+         dfmax = dfmax,
+         standardize = FALSE,
          ...)
 }
 
@@ -134,13 +170,13 @@ lasso.rand <- function(x, y,
 #' @param ... Additional arguments to \code{\link{lasso.rand}}
 #' @return A list containing selected covariates with frequencies, and the fitted model
 stability.selection <- function(x, y, 
-                                fraction=0.5, 
-                                threshold=0.75, 
-                                EV=1, 
-                                nbootstrap=100,
-                                weakness=1,
-                                intercept=FALSE,
-                                ncores=1,
+                                fraction = 0.5, 
+                                threshold = 0.75, 
+                                EV = 1, 
+                                nbootstrap = 100,
+                                weakness = 1,
+                                intercept = FALSE,
+                                ncores = 1,
                                 ...) {
   # Dimensions
   n <- nrow(x)
@@ -157,7 +193,7 @@ stability.selection <- function(x, y,
 #   registerDoMC(cores=ncores)
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
-  sel.mat <- foreach (b = 1:nbootstrap, .combine=rbind) %dopar% {
+  sel.mat <- foreach (b = 1:nbootstrap, .combine =rbind) %dopar% {
     # Current sub-sampled data
     sel <- sample(1:n, n.sel, replace=FALSE)        
     # Get selected model
@@ -175,12 +211,12 @@ stability.selection <- function(x, y,
   x.sel <- as.matrix(x[,sel.current])
   rownames(x.sel) <- rownames(x)
   colnames(x.sel) <- colnames(x)[sel.current]
-  model <- lm(y ~ x.sel - 1)
+  model <- lm(as.matrix(y) ~ as.matrix(x.sel) - 1) # as.matrix() ?
   
   # Stop the cluster
   stopCluster(cl)
 
-  out <- list(model=model, matrix=sel.mat, frequency=freq, selection=sel.current)
+  out <- list(model = model, matrix = sel.mat, frequency = freq, selection = sel.current)
   return(out)  
 }
 

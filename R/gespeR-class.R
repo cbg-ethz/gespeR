@@ -42,13 +42,13 @@
 #'     weakness = 0.8,
 #'     ncores = 1)
 #' gsp(res)
-setClass(Class="gespeR",
-         representation=representation(
-           SSP="Phenotypes",
-           GSP="Phenotypes",
-           target.relations="TargetRelations",
-           is.fitted="logical",
-           model="list"
+setClass(Class = "gespeR",
+         representation = representation(
+           SSP = "Phenotypes",
+           GSP = "Phenotypes",
+           target.relations = "TargetRelations",
+           is.fitted = "logical",
+           model = "list"
          ),
          validity=function(object) {
            return(TRUE)
@@ -59,7 +59,9 @@ setClass(Class="gespeR",
 #' @rdname gespeR-class
 #' @exportMethod gespeR
 #'
-#' @param phenotypes The siRNA-spefic phenotypes
+#' @param phenotypes The siRNA-spefic phenotypes. Single object for univariate
+#' phenotypes and list of \code{\link{Phenotypes}} objects for multivariate
+#' phenotypes.
 #' @param target.relations The siRNA-to-gene target relations
 #' @param mode The mode of covariate selectino ("cv" or "stability")
 #' @param alpha The \code{\link{glmnet}} mixing parameter
@@ -77,9 +79,10 @@ setGeneric("gespeR",
            })
 #' @rdname gespeR-class
 setMethod("gespeR",
-          signature = signature(phenotypes="Phenotypes", target.relations="TargetRelations"),
-          function(phenotypes, target.relations, 
-                   mode=c("cv", "stability"), 
+          signature = signature(phenotypes = "Phenotypes", target.relations = "TargetRelations"),
+          function(phenotypes, 
+                   target.relations, 
+                   mode = c("cv", "stability"), 
                    alpha = 0.5, 
                    nbootstrap = 100, 
                    fraction = 0.67, 
@@ -93,11 +96,11 @@ setMethod("gespeR",
             phenotypes <- na.rem(phenotypes)
             xy <- join(targets=target.relations, phenotypes=phenotypes)
             model <- switch(mode,
-                            "cv"=.gespeR.cv(targets = values(xy$targets), SSP = scores(xy$phenotypes),
+                            "cv"=.gespeR.cv(targets = values(xy$targets), SSP = values(xy$phenotypes),
                                             alpha = alpha,
                                             ncores = ncores,
                                             ...),
-                            "stability"=.gespeR.stability(targets = values(xy$targets), SSP = scores(xy$phenotypes), 
+                            "stability"=.gespeR.stability(targets = values(xy$targets), SSP = values(xy$phenotypes), 
                                                           nbootstrap = nbootstrap,
                                                           fraction = fraction,
                                                           threshold = threshold,
@@ -105,23 +108,36 @@ setMethod("gespeR",
                                                           weakness = weakness,
                                                           ncores = ncores,
                                                           ...)
-            )            
-            gsp <- switch(mode,
-                          cv=model$coefficients[-1][which(model$coefficients[-1] != 0)],
-                          stability=model$coefficients
             )
-            names(gsp) <- switch(mode,
-                                 cv=names(gsp),
-                                 stability=names(model$stability$selection)
-            )
+            if (mode == "cv") {
+              gsp <- cBind(model$coefficients[-1,])
+              gsp[which(gsp == 0)] <- NA
+            } else if (mode == "stability") {
+              gsp <- rep(NA,length(xy$targets@genes))
+              names(gsp) <- xy$targets@genes
+              gsp[match(names(model$stability$selection), names(gsp))] <- model$coefficients
+            } else {
+              stop("Unknown mode")
+            }
+#             gsp <- switch(mode,
+#                           cv = model$coefficients[-1][which(model$coefficients[-1] != 0)],
+#                           stability = model$coefficients
+#             )
+#             names(gsp) <- switch(mode,
+#                                  cv = names(gsp),
+#                                  stability = names(model$stability$selection)
+#             )
             #             target.relations <- unloadValues(target.relations)
             new("gespeR",
-                SSP=xy$phenotypes,
-                GSP=Phenotypes(phenotype=gsp, ids=names(gsp), type="GSP"),
-                target.relations=xy$targets,
-                model=model,
-                is.fitted=TRUE)
-            
+                SSP = xy$phenotypes,
+                GSP = new("Phenotypes",
+                          type = "GSP",
+                          ids = xy$targets@genes,
+                          pnames = xy$phenotypes@pnames,
+                          values = Matrix(gsp)), 
+                target.relations = xy$targets,
+                model = model,
+                is.fitted = TRUE)
           }
 )
 #' @rdname gespeR-class
@@ -195,11 +211,11 @@ setMethod(f="stability",
 plot.gespeR <- function(x, ...) {
   if (x@is.fitted) {
     switch(x@model$type,
-           "cv"=hist(scores(x, "GSP"), xlab="Scores", main="Gene-Specific Phenotypes", ...),
-           "stability"=plot(x@model$coefficients, x@model$stability$frequency[x@model$stability$selection], xlab="Scores", ylab="Stability", main="Gene-Specific Phenotypes", ...)
+           "cv" = plot(gsp(x), main = "Gene-Specific Phenotypes"),
+           "stability" = plot(x@model$coefficients, x@model$stability$frequency[x@model$stability$selection], xlab="Scores", ylab="Stability", main="Gene-Specific Phenotypes", ...)
     )
   } else {
-    hist(scores(x, "SSP"), xlab="Scores", main="siRNA-Specific Phenotypes", ...)
+    hist(scores(x, "SSP"), xlab = "Scores", main = "siRNA-Specific Phenotypes", ...)
   }
 }
 

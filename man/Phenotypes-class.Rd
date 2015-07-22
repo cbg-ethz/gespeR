@@ -3,9 +3,9 @@
 \docType{class}
 \name{Phenotypes-class}
 \alias{Phenotypes}
+\alias{Phenotypes,Matrix-method}
 \alias{Phenotypes,cellHTS-method}
 \alias{Phenotypes,character-method}
-\alias{Phenotypes,numeric-method}
 \alias{Phenotypes-class}
 \title{Phenotypes}
 \usage{
@@ -16,8 +16,8 @@ Phenotypes(phenotypes, ...)
 
 \S4method{Phenotypes}{cellHTS}(phenotypes, channel, sample)
 
-\S4method{Phenotypes}{numeric}(phenotypes, ids = NULL, type = c("SSP",
-  "GSP"))
+\S4method{Phenotypes}{Matrix}(phenotypes, ids = NULL, pnames = NULL,
+  type = c("SSP", "GSP"))
 }
 \arguments{
 \item{phenotypes}{The phenotypes as numeric vector, path to a .txt file with two columns (1: identifiers, 2: values), or a cellHTS object}
@@ -28,15 +28,17 @@ Phenotypes(phenotypes, ...)
 
 \item{sep}{The separator string}
 
-\item{col.id}{Column number for the identifier}
+\item{col.id}{Column number for the siRNA identifiers}
 
-\item{col.score}{Column number for the phenotype score}
+\item{col.score}{Column number(s) for the phenotype score}
 
 \item{channel}{The cellHTS channel identifier}
 
 \item{sample}{The cellHTS sample index}
 
-\item{ids}{The phenotype identifiers}
+\item{ids}{The siRNA/gene identifiers}
+
+\item{pnames}{The phenotype identifiers}
 }
 \value{
 A \code{\linkS4class{Phenotypes}} object
@@ -50,7 +52,9 @@ siRNA-specific (SSP) or estimated gene-specific phenotypes (GSP).
 \describe{
 \item{\code{type}}{The type of represented phenotypes (i.e., "SSP" or "GSP")}
 
-\item{\code{ids}}{The phenotype identifiers (i.e., siRNA or gene ids)}
+\item{\code{ids}}{The entity identifiers (i.e., siRNA or gene ids)}
+
+\item{\code{pnames}}{The phenotype names}
 
 \item{\code{values}}{The phenotypic values}
 }}

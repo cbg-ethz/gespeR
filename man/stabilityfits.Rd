@@ -6,6 +6,7 @@
 \title{Example fits for phenotypes from simulated screening data A, B, C and D}
 \description{
 The data set contains four fitted gespeR models using stability selection
+from the four simulated screens.
 }
 \examples{
 data(stabilityfits)

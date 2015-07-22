@@ -31,7 +31,7 @@ opts_chunk$set(fig.path='tmp/gespeR-', fig.align='center', fig.show='hold', par=
 \maketitle
 \tableofcontents
 
-\section{Introduction}
+\section{The \texttt{gespeR} Model}
 This package provides algorithms for deconvoluting off-target confounded phenotypes from RNA interference screens. The packages uses (predicted) siRNA-to-gene target relations in a regularised linear regression model, in order to infer individual gene-specific phenotype (GSP) contributions. The observed siRNA-specific phenotypes (SSPs) for reagent $i = 1,\ldots,n$ as the weighted linear sum of GSPs of all targeted genes $j = 1,\ldots,p$
 \begin{align}
 Y_i &= x_{i1}\beta_j + \ldots + x_{ip}\beta_p + \epsilon_i,
@@ -49,7 +49,7 @@ Here $\lambda$ determines the amount of regualrisation and $\alpha$ is the mixin
 \end{itemize}
 
 \section{Working Example}
-In this example, we load first load simulated phenotypic readout and siRNA-to-gene target relations. The toy data consists of four screens (A, B, C, D) of 1,000 siRNAs and a limited gene universe of 1,500 genes. First, we load the package:
+In this example, we load first load simulated phenotypic readout and siRNA-to-gene target relations. The toy data consists of four screens (A, B, C, D) of 1,000 siRNAs and a limited gene universe of 1,500 genes. Detailed description of how the data was simulated can be accessed using \texttt{?simData}. First, we load the package:
 <<load_gespeR, message = FALSE>>=
   library(gespeR)
 @

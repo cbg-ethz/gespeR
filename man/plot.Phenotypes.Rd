@@ -4,7 +4,7 @@
 \alias{plot.Phenotypes}
 \title{Plot method for Phenotype objects}
 \usage{
-\method{plot}{Phenotypes}(x, ...)
+\method{plot}{Phenotypes}(x, main = "")
 }
 \arguments{
 \item{x}{A \code{\linkS4class{Phenotypes}} object}
@@ -13,6 +13,11 @@
 }
 \value{
 Histogram of scores
+phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+type = "SSP",
+col.id = 1,
+col.score = 2)
+plot(phenos)
 }
 \description{
 Plot method for Phenotype objects
