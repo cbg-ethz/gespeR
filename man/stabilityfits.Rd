@@ -3,7 +3,7 @@
 \docType{data}
 \name{stabilityfits}
 \alias{stabilityfits}
-\title{Example fits for phenotypes from example screening data A, B, C and D}
+\title{Example fits for phenotypes from simulated screening data A, B, C and D}
 \description{
 The data set contains four fitted gespeR models using stability selection
 }

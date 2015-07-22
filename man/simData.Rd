@@ -3,7 +3,7 @@
 \docType{data}
 \name{simData}
 \alias{simData}
-\title{Example phenotype and target relations data A, B, C, and D}
+\title{Example data: Simulated phenotypes and target relations for 4 screens (A, B, C, D)}
 \description{
 The data set contains simulated data for four screens. Each screen consists of a phenotype vector
 and target relations between siRNAs and genes, i.e. which siRNA binds which genes (on- and off-targets).
