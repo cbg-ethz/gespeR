@@ -126,7 +126,7 @@ setMethod(f = "[",
 
 setMethod(f = "dim",
           signature = signature("Phenotypes"),
-          function(object) {            
-            dim(object@values)
+          function(x) {            
+            dim(x@values)
           }
 )
