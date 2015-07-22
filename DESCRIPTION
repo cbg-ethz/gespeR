@@ -25,8 +25,8 @@ VignetteBuilder: knitr
 Type: Package
 Lazyload: yes
 Title: Gene-Specific Phenotype EstimatoR
-Version: 1.1.0
-Date: 2015-03-20
+Version: 1.1.1
+Date: 2015-07-22
 Author: Fabian Schmich
 Maintainer: Fabian Schmich <fabian.schmich@bsse.ethz.ch>
 Description: Estimates gene-specific phenotypes from off-target confounded RNAi
