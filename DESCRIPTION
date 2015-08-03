@@ -26,7 +26,7 @@ VignetteBuilder: knitr
 Type: Package
 Lazyload: yes
 Title: Gene-Specific Phenotype EstimatoR
-Version: 1.1.1
+Version: 1.1.2
 Date: 2015-07-22
 Author: Fabian Schmich
 Maintainer: Fabian Schmich <fabian.schmich@bsse.ethz.ch>
