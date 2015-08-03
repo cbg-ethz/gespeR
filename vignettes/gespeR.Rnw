@@ -40,7 +40,7 @@ where $x_{ij}$ represents the strength of knockdown of reagent $i$ on gene $j$, 
 \begin{align}
 \hat{\beta} &= \underset{\beta}{\text{argmin}} \left\{ \sum_{i=1}^n \left( y_i - \sum_{j=1}^p x_{ij}\beta_j \right)^2 + \lambda \sum_{j=1}^p \left(  \alpha\beta_j^2 + \left(1 - \alpha \right) |\beta_j| \right) \right\}.
 \end{align}
-Here $\lambda$ determines the amount of regualrisation and $\alpha$ is the mixing parameter between the ridge and lasso penalty with $0 \leq \alpha \leq 1$. The elastic net penalty selects variables like the lasso and shrinks together the coefficients of correlated predictors like ridge. This allows for a sparse solution of nonzero GSPs, while retaining simultaneous selection of genes with similar RNAi reagent binding patterns in their respective 3' UTRs. For more information and for citing the \texttt{gespeR} package please use:
+Here $\lambda$ determines the amount of regualrisation and $\alpha$ is the mixing parameter between the ridge and lasso penalty with $0 \leq \alpha \leq 1$. The elastic net penalty selects variables like the lasso and shrinks together the coefficients of correlated predictors like ridge. This allows for a sparse solution of nonzero GSPs, while retaining simultaneous selection of genes with similar RNAi reagent binding patterns in their respective 3' UTRs. For more information and for citing the \texttt{gespeR} package please refer to:
 \begin{itemize}
 \item[]
 <<citation, echo = FALSE, results = "asis">>=
@@ -121,31 +121,31 @@ The fitted models can also be visualised using the \texttt{plot} method:
   plot(res.cv[[1]])
 @
 
-
-Another way to fit \texttt{gespeR} models is to use stability selection:
-<<fit_stability>>=
-  res.stab <- lapply(1:length(phenos), function(i) {
-    gespeR(phenotypes = phenos[[i]],
-      target.relations = tr[[i]],
-      mode = "stability",
-      nbootstrap = 100,
-      fraction = 0.67,
-      threshold = 0.75,
-      EV = 1,
-      weakness = 0.8,
-      ncores = 1)
-  })
-@
-
-Again, these models can be visualised using the \texttt{plot} method. This time, the phenotypic scores are plotted against their stability value:
-<<plot_stability>>=
-  plot(res.stab[[1]])
-@
+% 
+% Another way to fit \texttt{gespeR} models is to use stability selection:
+% <<fit_stability>>=
+%   res.stab <- lapply(1:length(phenos), function(i) {
+%     gespeR(phenotypes = phenos[[i]],
+%       target.relations = tr[[i]],
+%       mode = "stability",
+%       nbootstrap = 100,
+%       fraction = 0.67,
+%       threshold = 0.75,
+%       EV = 1,
+%       weakness = 0.8,
+%       ncores = 1)
+%   })
+% @
+% 
+% Again, these models can be visualised using the \texttt{plot} method. This time, the phenotypic scores are plotted against their stability value:
+% <<plot_stability>>=
+%   plot(res.stab[[1]])
+% @
 
 The \texttt{concordance} method can be used to compute the concordance between ranked lists of phenotypes. Here we compute concordance between all pairs of GSPs, as well as between all pairs of SSPs, from all four data sets:
 <<concordance>>=
-  conc.gsp <- concordance(lapply(res.stab, gsp))
-  conc.ssp <- concordance(lapply(res.stab, ssp))
+  conc.gsp <- concordance(lapply(res.cv, gsp))
+  conc.ssp <- concordance(lapply(res.cv, ssp))
 @
 
 We can visualise the \texttt{concordance} objects using the \texttt{plot} method:

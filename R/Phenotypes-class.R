@@ -221,10 +221,10 @@ setMethod("as.data.frame",
 
 #' Plot method for Phenotype objects
 #' 
-#' @return NULL
-#' @method plot Phenotypes
-#' @export
 #' @author Fabian Schmich 
+#' @export
+#' @method plot Phenotypes
+#' 
 #' @param x A \code{\linkS4class{Phenotypes}} object
 #' @param ... Additional arguments for plot
 #' @return Histogram of scores
@@ -233,14 +233,13 @@ setMethod("as.data.frame",
 #' col.id = 1,
 #' col.score = 2)
 #' plot(phenos)
-plot.Phenotypes <- function(x, main = "") {
+plot.Phenotypes <- function(x, ...) {
   as.data.frame(x) %>% 
     melt(id.vars = "ID") %>% 
-    ggplot(aes(x = value)) + 
+    ggplot(aes_string(x = "value")) + 
     geom_histogram() + 
     facet_wrap(~variable) + 
-    ggtitle(main) +
-#     ggtitle(sprintf("%s Phenotypes", x@type)) +
+    ggtitle(sprintf("%s Phenotypes", x@type)) +
     xlab("Phenotype") + 
     ylab("Frequency") + 
     theme_bw()

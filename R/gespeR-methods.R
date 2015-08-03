@@ -350,6 +350,7 @@ setMethod(f = "ssp",
 #' or \code{\linkS4class{Phenotypes}} object
 #' @return A \code{\link{Matrix}} object
 setGeneric(name = "values", def=function(object) standardGeneric("values"))
+
 #' @rdname values-methods
 #' @examples
 #' trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
@@ -361,6 +362,13 @@ setMethod(f = "values",
             return(object@values)
           }
 )
+#' @rdname values-methods
+#' @examples
+#' phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+#' type = "SSP",
+#' col.id = 1,
+#' col.score = 2)
+#' values(phenos)
 setMethod(f = "values",
           signature = signature(object = "Phenotypes"),
           function(object) {

@@ -130,7 +130,7 @@ lasso.rand <- function(x,
                        standardize = FALSE,
                        intercept = FALSE,
                        ...) {
-  if (ncol(y) > 1) {
+  if (is.matrix(y) && ncol(y) > 1) {
     stop("Randomised lasso not yet implemented for multivariate phenotypes")
   }
   if (is.null(dim(y))) y <- cbind(y)  

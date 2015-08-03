@@ -32,14 +32,16 @@ setMethod(f = "show",
           signature = signature(object = "gespeR"),
           definition = function(object) {
             if (object@is.fitted) {
-              res <- switch(object@model$type,
-                            "cv" = as.data.frame(object@GSP),
-                            "stability" = data.frame(as.data.frame(object@GSP),
-                                                     Stability = object@model$stability$frequency) %>%
-                              tbl_df() %>% arrange(desc(Stability))
-              )
-#               res <- res[order(abs(res$GSP), decreasing = TRUE),]
-              res <- res %>% tbl_df()
+              if (object@model$type == "cv") {
+                res <- as.data.frame(object@GSP) %>% tbl_df()
+                res <- res[order(res$Scores, decreasing = TRUE),]
+              } else if (object@model$type == "stability") {
+                res <- data.frame(as.data.frame(object@GSP),
+                                  "Stability" = object@model$stability$frequency) %>% tbl_df()
+                res <- res[order(res$Stability, decreasing = TRUE),]
+              } else {
+                stop("Unknown type")
+              }
               print(res)
             } else {
               cat("Model not fitted.\n")
@@ -124,6 +126,12 @@ setMethod(f = "[",
           }
 )
 
+#' Dimension of a \code{\linkS4class{Phenotypes}} object
+#' 
+#' @author Fabian Schmich
+#' 
+#' @param x \code{\linkS4class{Phenotypes}} object
+#' @return Dimension of the \code{\linkS4class{Phenotypes}} object
 setMethod(f = "dim",
           signature = signature("Phenotypes"),
           function(x) {            

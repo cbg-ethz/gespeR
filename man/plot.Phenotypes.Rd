@@ -4,7 +4,7 @@
 \alias{plot.Phenotypes}
 \title{Plot method for Phenotype objects}
 \usage{
-\method{plot}{Phenotypes}(x, main = "")
+\method{plot}{Phenotypes}(x, ...)
 }
 \arguments{
 \item{x}{A \code{\linkS4class{Phenotypes}} object}

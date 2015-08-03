@@ -1,3 +1,3 @@
 \contentsline {section}{\numberline {1}The \texttt {gespeR} Model}{1}{section.1}
 \contentsline {section}{\numberline {2}Working Example}{1}{section.2}
-\contentsline {section}{\numberline {3}sessionInfo()}{8}{section.3}
+\contentsline {section}{\numberline {3}sessionInfo()}{7}{section.3}

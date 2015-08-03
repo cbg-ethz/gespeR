@@ -85,7 +85,7 @@ where $x_{ij}$ represents the strength of knockdown of reagent $i$ on gene $j$, 
 \begin{align}
 \hat{\beta} &= \underset{\beta}{\text{argmin}} \left\{ \sum_{i=1}^n \left( y_i - \sum_{j=1}^p x_{ij}\beta_j \right)^2 + \lambda \sum_{j=1}^p \left(  \alpha\beta_j^2 + \left(1 - \alpha \right) |\beta_j| \right) \right\}.
 \end{align}
-Here $\lambda$ determines the amount of regualrisation and $\alpha$ is the mixing parameter between the ridge and lasso penalty with $0 \leq \alpha \leq 1$. The elastic net penalty selects variables like the lasso and shrinks together the coefficients of correlated predictors like ridge. This allows for a sparse solution of nonzero GSPs, while retaining simultaneous selection of genes with similar RNAi reagent binding patterns in their respective 3' UTRs. For more information and for citing the \texttt{gespeR} package please use:
+Here $\lambda$ determines the amount of regualrisation and $\alpha$ is the mixing parameter between the ridge and lasso penalty with $0 \leq \alpha \leq 1$. The elastic net penalty selects variables like the lasso and shrinks together the coefficients of correlated predictors like ridge. This allows for a sparse solution of nonzero GSPs, while retaining simultaneous selection of genes with similar RNAi reagent binding patterns in their respective 3' UTRs. For more information and for citing the \texttt{gespeR} package please refer to:
 \begin{itemize}
 \item[]
 Schmich F (2015).
@@ -312,48 +312,33 @@ The fitted models can also be visualised using the \texttt{plot} method:
 
 \end{knitrout}
 
-
-Another way to fit \texttt{gespeR} models is to use stability selection:
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-  \hlstd{res.stab} \hlkwb{<-} \hlkwd{lapply}\hlstd{(}\hlnum{1}\hlopt{:}\hlkwd{length}\hlstd{(phenos),} \hlkwa{function}\hlstd{(}\hlkwc{i}\hlstd{) \{}
-    \hlkwd{gespeR}\hlstd{(}\hlkwc{phenotypes} \hlstd{= phenos[[i]],}
-      \hlkwc{target.relations} \hlstd{= tr[[i]],}
-      \hlkwc{mode} \hlstd{=} \hlstr{"stability"}\hlstd{,}
-      \hlkwc{nbootstrap} \hlstd{=} \hlnum{100}\hlstd{,}
-      \hlkwc{fraction} \hlstd{=} \hlnum{0.67}\hlstd{,}
-      \hlkwc{threshold} \hlstd{=} \hlnum{0.75}\hlstd{,}
-      \hlkwc{EV} \hlstd{=} \hlnum{1}\hlstd{,}
-      \hlkwc{weakness} \hlstd{=} \hlnum{0.8}\hlstd{,}
-      \hlkwc{ncores} \hlstd{=} \hlnum{1}\hlstd{)}
-  \hlstd{\})}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
-Again, these models can be visualised using the \texttt{plot} method. This time, the phenotypic scores are plotted against their stability value:
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-  \hlkwd{plot}\hlstd{(res.stab[[}\hlnum{1}\hlstd{]])}
-\end{alltt}
-\end{kframe}
-
-{\centering \includegraphics[width=.75\textwidth]{tmp/gespeR-plot_stability-1} 
-
-}
-
-
-
-\end{knitrout}
+% 
+% Another way to fit \texttt{gespeR} models is to use stability selection:
+% <<fit_stability>>=
+%   res.stab <- lapply(1:length(phenos), function(i) {
+%     gespeR(phenotypes = phenos[[i]],
+%       target.relations = tr[[i]],
+%       mode = "stability",
+%       nbootstrap = 100,
+%       fraction = 0.67,
+%       threshold = 0.75,
+%       EV = 1,
+%       weakness = 0.8,
+%       ncores = 1)
+%   })
+% @
+% 
+% Again, these models can be visualised using the \texttt{plot} method. This time, the phenotypic scores are plotted against their stability value:
+% <<plot_stability>>=
+%   plot(res.stab[[1]])
+% @
 
 The \texttt{concordance} method can be used to compute the concordance between ranked lists of phenotypes. Here we compute concordance between all pairs of GSPs, as well as between all pairs of SSPs, from all four data sets:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-  \hlstd{conc.gsp} \hlkwb{<-} \hlkwd{concordance}\hlstd{(}\hlkwd{lapply}\hlstd{(res.stab, gsp))}
-  \hlstd{conc.ssp} \hlkwb{<-} \hlkwd{concordance}\hlstd{(}\hlkwd{lapply}\hlstd{(res.stab, ssp))}
+  \hlstd{conc.gsp} \hlkwb{<-} \hlkwd{concordance}\hlstd{(}\hlkwd{lapply}\hlstd{(res.cv, gsp))}
+  \hlstd{conc.ssp} \hlkwb{<-} \hlkwd{concordance}\hlstd{(}\hlkwd{lapply}\hlstd{(res.cv, ssp))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -389,9 +374,9 @@ We can visualise the \texttt{concordance} objects using the \texttt{plot} method
     assertthat~0.1, Biobase~2.28.0, BiocGenerics~0.14.0,
     BiocInstaller~1.18.3, biomaRt~2.24.0, bitops~1.0-6,
     Category~2.34.2, cellHTS2~2.32.0, cluster~2.0.2,
-    codetools~0.2-11, colorspace~1.2-6, compiler~3.2.0, DBI~0.3.1,
-    DEoptimR~1.0-2, digest~0.6.8, doParallel~1.0.8, dplyr~0.4.2,
-    evaluate~0.7, foreach~1.4.2, formatR~1.2, genefilter~1.50.0,
+    codetools~0.2-11, colorspace~1.2-6, DBI~0.3.1, DEoptimR~1.0-2,
+    digest~0.6.8, doParallel~1.0.8, dplyr~0.4.2, evaluate~0.7,
+    foreach~1.4.2, formatR~1.2, genefilter~1.50.0,
     GenomeInfoDb~1.4.1, glmnet~2.0-2, graph~1.46.0, grid~3.2.0,
     GSEABase~1.30.2, gtable~0.1.2, highr~0.5, IRanges~2.2.4,
     iterators~1.0.7, labeling~0.3, lattice~0.20-31, limma~3.24.10,

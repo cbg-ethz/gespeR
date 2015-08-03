@@ -3,12 +3,15 @@
 \docType{methods}
 \name{values}
 \alias{values}
+\alias{values,Phenotypes-method}
 \alias{values,TargetRelations-method}
 \title{values}
 \usage{
 values(object)
 
 \S4method{values}{TargetRelations}(object)
+
+\S4method{values}{Phenotypes}(object)
 }
 \arguments{
 \item{object}{A \code{\linkS4class{TargetRelations}}
@@ -24,6 +27,11 @@ or \code{\linkS4class{Phenotypes}} object
 \examples{
 trels <- TargetRelations(readRDS(system.file("extdata", "TR_screen_A.rds", package = "gespeR")))
 values(trels)[1:5, 1:5]
+phenos <- Phenotypes(system.file("extdata", "Phenotypes_screen_A.txt", package = "gespeR"),
+type = "SSP",
+col.id = 1,
+col.score = 2)
+values(phenos)
 }
 \author{
 Fabian Schmich
