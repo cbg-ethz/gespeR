@@ -31,9 +31,9 @@ High-content, image based phenotypes for pathogen infection RNAi screens from th
 Step-by-step instructions demonstrating how to download, pre-process and deconvolute pathogen infection screen phnotypes is available in form of an [R/Vignette](http://edit.ethz.ch/bsse/cbg/software/gespeR/Deconvolute_Pathogen_Screens).
 
 ### Contributions
- [Fabian Schmich](http://www.bsse.ethz.ch/cbg/group/people/person-detail.html?persid=183865)  
- [Ewa Szczurek](mailto:ewa.szczurek@bsse.ethz.ch)
- [Niko Beerenwinkel](http://www.bsse.ethz.ch/cbg/group/people/person-detail.html?persid=149417)
+- [Fabian Schmich](http://www.bsse.ethz.ch/cbg/group/people/person-detail.html?persid=183865)
+- [Ewa Szczurek](mailto:ewa.szczurek@bsse.ethz.ch)
+- [Niko Beerenwinkel](http://www.bsse.ethz.ch/cbg/group/people/person-detail.html?persid=149417)
  
 ###Contact
 ```
