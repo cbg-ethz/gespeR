@@ -1,0 +1,251 @@
+---
+title: "Deconvoluting pathogen infection RNAi screens with gespeR"
+author: "Fabian Schmich"
+output:
+  html_document:
+    theme: united
+---
+
+This file contains step-by-step instructions on how to obtain the data and 
+deconvolute phenotypes from pathogen infection screens, as shown in *gespeR: A 
+statistical model for deconvoluting off-target-confounded RNA interference 
+screens* (Schmich et al., 2015). For full compatibility, please download the
+development version of gespeR at: https://github.com/fschmich/gespeR
+
+***
+
+## Downloading data
+### Phenotypic data
+1. Go to https://pubchem.ncbi.nlm.nih.gov/assay/assay.cgi?aid=1117357&viewcode=X,
+replacing **X** with the viewcode provided (data is on hold until March 19, 2016).
+2. At the top table, in the description field, click *View All Data*.
+3. Scroll to the bottom of the page. Under *Result Exports* choose to save 
+BioAssay as CSV file to /tmp/phenotypes.csv.
+4. Download the mapping from PubChem to Vendor siRNA IDs from 
+http://www.ncbi.nlm.nih.gov/pcsubstance/?term=%22InfectX+Consortium%22%5Bsourcename%5D. 
+On the top right of the page, press *Send To* -> *File* -> *Format: ID Map* and
+save to /tmp/mapping.txt.
+
+### Target relation matrices
+1. Go to https://www1.ethz.ch/bsse/cbg/software/gespeR.
+2. Download the following siRNA-to-gene target relation matrices
+    - Qiagen libraries to /tmp/QIAGEN.rds
+    - Dharmacon library to /tmp/DHARMACON.rds
+    - Validation library to /tmp/VALIDATION.rds
+3. Alternatively, from within R, type
+```{r dl, message = FALSE, eval = FALSE}
+sapply(c("QIAGEN", "DHARMACON", "VALIDATION"), function(x) {
+  download.file(url = sprintf("http://n.ethz.ch/~fschmich/gespeR/%s.rds", x),
+                destfile = sprintf("/tmp/%s.rds", x), quiet = FALSE, mode = "wb")
+})
+```
+
+## Preprocessing data
+### Target relation matrices
+```{r tarrel, message = FALSE}
+require(Matrix)
+require(gespeR)
+# Construct TargetRelations objects for each library
+Q <- TargetRelations("/tmp/QIAGEN.rds")
+show(Q)
+```
+
+### Phenotypic data
+```{r phens, message = FALSE}
+require(dplyr)
+require(reshape2)
+require(gespeR)
+# Read phenotypes
+phenotypes <- read.delim("/tmp/phenotypes.csv", 
+                         sep = ",", stringsAsFactors = FALSE) %>% 
+  tbl_df() %>%
+  select(SID, GeneID = NCBI.Gene.ID, siRNASet = SIRNA_SET, contains("Infectivity")) %>% 
+  melt(id.vars = c("SID", "siRNASet", "GeneID")) %>% 
+  tbl_df() %>%
+  select(SID = SID, GeneID, siRNASet, Pathogen = variable, Phenotype = value) %>%
+  mutate(Pathogen = gsub("Infectivity_", "", Pathogen),
+         SID = as.character(SID)) %>%
+  filter(!is.na(Phenotype)) %>% # Artifact of how data is deposited in Pubchem
+  arrange(SID)
+head(phenotypes)
+
+# Read ID mapping between SIDs and Vendor IDs
+map <- read.delim("/tmp/mapping.txt", header = FALSE, stringsAsFactors = FALSE)
+map <- map[seq(2, nrow(map), by = 2),]
+map <- data.frame(t(sapply(map, function(x) {
+  unlist(strsplit(x, split = "SID: | InfectX Consortium: "))[2:3]
+})), stringsAsFactors = FALSE) %>% tbl_df()
+rownames(map) <- NULL
+colnames(map) <- c("SID", "VendorID")
+
+# Map IDs
+phenotypes <- left_join(phenotypes, map, by = "SID") %>% 
+  tbl_df() %>% 
+  select(SID, VendorID, siRNASet, GeneID, Pathogen, Phenotype)
+head(phenotypes)
+
+# Construct Phenotypes objects for each (Qiagen) library + pathogen combination
+obs.ssp <- obs.gsp <- list()
+phenotypes <- split(phenotypes, phenotypes$Pathogen)
+for (pathogen in names(phenotypes)) {
+  obs.ssp[[pathogen]] <- obs.gsp[[pathogen]] <- list()
+  for (s in 1:4) {
+    spl <- filter(phenotypes[[pathogen]], siRNASet == s, VendorID %in% Q@siRNAs)
+    obs.ssp[[pathogen]][[s]] <- Phenotypes(phenotypes = Matrix(spl$Phenotype),
+                                           ids = spl$VendorID, 
+                                           pnames = c("Infectivity"),
+                                           type = "SSP")
+    spl.noNA <- filter(spl, !is.na(GeneID)) %>% 
+      group_by(GeneID) %>% 
+      summarise(Phenotype = mean(Phenotype, na.rm = TRUE)) %>% 
+      filter(!is.nan(Phenotype))
+    # We need gene-based Phenotypes objects for concordance evaluation
+    obs.gsp[[pathogen]][[s]] <- Phenotypes(phenotypes = Matrix(spl.noNA$Phenotype), 
+                                           ids = as.character(spl.noNA$GeneID), 
+                                           pnames = c("Infectivity"),
+                                           type = "GSP")
+  }
+}
+show(obs.ssp$Bartonella[[1]])
+```
+
+## Fitting gespeR models
+```{r fitges, message = FALSE, eval = FALSE}
+require(gespeR)
+# Fit gespeR models
+ans.cv <- list()
+for (pathogen in c("Bartonella", "Brucella", "Salmonella")) {
+  ans.cv[[pathogen]] <- list()
+  for (s in 1:4) {
+    cat(sprintf("set: %d, pathogen: %s\n", s, pathogen))
+    ges <- gespeR(phenotypes = obs.ssp[[pathogen]][[s]],
+                                      target.relations = Q,
+                                      mode = "cv",
+                                      alpha = 0.5,
+                                      ncores = 1)
+    ans.cv[[pathogen]][[s]] <- unloadValues(ges, writeValues = FALSE)
+  }
+}
+```
+
+```{r gsps, message = FALSE, eval = FALSE}
+# Obtain gene-specific phenotypes (GSPs)
+ges.gsp <- lapply(ans.cv, function(x) {
+  lapply(x, gsp)
+})
+```
+```{r loadgsps, echo = FALSE}
+ges.gsp <- readRDS("~/gespeR_GSPs.rds")
+```
+
+## Concordance evaluation
+```{r conceval, message = FALSE}
+require(gespeR)
+require(ggplot2)
+# Function computes concordance between all pairs of phenotypes. Measures used
+# are Spearman's correlation, rank-biased overlap and the Jaccard index.
+# Observed phenotypes are cut to the same length as gespeR GSPs, respecting the
+# proportion of negative and positive phenotypes, in order to guarantee fair
+# comparison.
+get.conc <- function(phen, cut = NULL) {
+  min.overlap = 10
+  rbo.k = 1000
+  rbo.p = 1-1e-3
+  rbo.mid <- 0
+  cor.method = "spearman"
+  uneven.lengths = TRUE
+  if (!is.null(cut)) { # cut longer ranked lists to gespeR's lengths
+    lapply(names(phen), function(x) {
+      l <- lapply(cut[[x]], function(z) {
+        ans <- as.data.frame(z)
+        list(pos = length(which(ans$Infectivity > 0)), neg = length(which(ans$Infectivity < 0)))
+      })
+      phencut <- lapply(phen[[x]], function(y) {
+          as.data.frame(y) %>% 
+            tbl_df() %>%
+            mutate(ID = as.character(ID)) %>%
+            filter(!is.na(Infectivity)) %>%
+            arrange(desc(Infectivity))
+      })
+      for (lib in 1:length(l)) {
+        len <- l[[lib]]
+        a <- nrow(phencut[[lib]]) - len$neg + 1
+        b <- nrow(phencut[[lib]])
+        phencut[[lib]] <- phencut[[lib]][c(1:len$pos, a:b),]
+        phencut[[lib]] <- Phenotypes(phenotypes = Matrix(phencut[[lib]]$Infectivity),
+                                     ids = phencut[[lib]]$ID, 
+                                     pnames = c("Infectivity"),
+                                     type = "SSP")
+      }
+      concordance(phencut, 
+                  min.overlap = min.overlap, 
+                  rbo.k = rbo.k, 
+                  rbo.p = rbo.p,
+                  cor.method = cor.method,
+                  rbo.mid = rbo.mid,
+                  uneven.lengths = uneven.lengths) %>% 
+        data.frame %>% 
+        select(-lisect) %>%
+        melt(id.vars = c("test.pair", "phen")) %>%
+        mutate(Method = "SSP", Pathogen = x) %>%
+        select(-test.pair, Method, Pathogen, Measure = variable, value) %>%
+        tbl_df()
+    }) %>% do.call("rbind", .)
+  } else {
+    lapply(names(phen), function(x) {
+      concordance(phen[[x]], 
+                  min.overlap = min.overlap, 
+                  rbo.k = rbo.k, 
+                  rbo.p = rbo.p, 
+                  cor.method = cor.method,
+                  rbo.mid = rbo.mid,
+                  uneven.lengths = uneven.lengths) %>% 
+        data.frame %>% 
+        select(-lisect) %>%
+        melt(id.vars = c("test.pair", "phen")) %>%
+        mutate(Method = "gespeR", Pathogen = x) %>%
+        select(-test.pair, Method, Pathogen, Measure = variable, value) %>%
+        tbl_df()
+    }) %>% do.call("rbind", .)
+  }
+}
+# Computation of concordance for gespeR GSPs and observed phenotypes
+conc.gespeR <- get.conc(ges.gsp)
+conc.obs <- get.conc(obs.gsp, cut = ges.gsp)
+
+# Visualisation of concordance measures
+dat <- rbind(conc.gespeR, conc.obs) %>% tbl_df() %>%
+  mutate(Pathogen = factor(Pathogen, levels = c("Brucella", "Bartonella", "Salmonella"), 
+                           labels = c("B. abortus", "B. henselae", "S. typhimurium")),
+         Method = factor(Method, levels = c("gespeR", "SSP"), 
+                         labels = c("gespeR", "Observed")))
+dat$Measure <- factor(dat$Measure, 
+                      levels = c("cor", "rbo.top", "rbo.bottom", "jaccard"), 
+                      labels = c(expression(rho), expression(rbo["" %down% ""]),
+                                 expression(rbo["" %up% ""]), expression("J")))
+ggplot(data = dat, aes(x = Pathogen, y = value, colour = Method)) + 
+      geom_boxplot(outlier.size = 0, width = 0.8) + 
+      facet_grid(. ~ Measure, labeller = label_parsed) +
+      xlab("") + ylab("") +
+      scale_colour_manual("", values = c("#d7191c", "#525252"), drop = FALSE) +
+      ylim(c(0, 1)) +
+      theme_bw(base_size = 12, base_family = "Helvetica") + 
+      theme(axis.text = element_text(size = rel(1.0)),
+            axis.title = element_text(size = rel(1.0), face = "bold"),
+            strip.text = element_text(size = rel(1.0), face = "bold"),
+            axis.ticks = element_line(colour = "black"),
+            legend.key = element_rect(colour = NA),
+            legend.text = element_text(size = rel(1.0)),
+            legend.title = element_text(size = rel(1.0), face = "bold"),
+            panel.background = element_rect(fill = "white", colour = NA),
+            panel.border = element_rect(fill = NA, colour = "grey50"),
+            panel.grid.major = element_line(colour = "grey90", size = 0.2),
+            panel.grid.minor = element_line(colour = "grey98", size = 0.5),
+            strip.background = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Session information
+```{r sessioninfo, message = FALSE}
+sessionInfo()
+```
